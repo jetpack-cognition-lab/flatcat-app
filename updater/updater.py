@@ -55,27 +55,10 @@ def download_from_url_into_file(url, location):
 
 def run_command(command):
     print(f'run_command command = {" ".join(command)}')
-    try:
-        run(command, check=True)
-    except (CalledProcessError, FileNotFoundError) as e:
-        print(f'error {e}')
-
-def main_download(args):
-    call_url = base_url + '/current.txt'
-    print(f'getting = {call_url}')
-    r = http.request(
-        'GET',
-        call_url,
-        headers=headers,
-    )
-    current_file = r.data.decode().strip()
-    current_version = current_file.replace(".tar.bz2", "").replace("flatcat-", "")
-    print(f'current_file = {current_file}, current_version = {current_version}')
-    print(f"new {current_version > args.installed_version}")
-    call_url = base_url + '/' + current_file
-    print(f'call_url = {call_url}')
-
-    location = download_from_url_into_file(call_url, f'{HOME}/data/{current_file}')
+    # try:
+    #     run(command, check=True)
+    # except (CalledProcessError, FileNotFoundError) as e:
+    #     print(f'error {e}')
 
 def main_uuid(args):
     """main_uuid
@@ -83,6 +66,27 @@ def main_uuid(args):
     uuid_instance = create_uuid(k=4)
     print(f"uuid = {uuid_instance}")
     return uuid_instance
+
+def main_download(args):
+    if args.install_version == 'current':
+        call_url = base_url + '/current.txt'
+        print(f'getting = {call_url}')
+        r = http.request(
+            'GET',
+            call_url,
+            headers=headers,
+        )
+        current_file = r.data.decode().strip()
+        current_version = current_file.replace(".tar.bz2", "").replace("flatcat-", "")
+        print(f'current_file = {current_file}, current_version = {current_version}')
+        print(f"new {current_version > args.installed_version}")
+    else:
+        current_version = args.install_version
+        current_file = f'flatcat-{current_version}.tar.bz2'
+        
+    call_url = base_url + '/' + current_file
+    print(f'call_url = {call_url}')
+    location = download_from_url_into_file(call_url, f'{HOME}/data/{current_file}')
 
 def main_install(args):
     """main_install
@@ -105,16 +109,27 @@ def main_install(args):
     # tar jcvf /home/pi/data/flatcat-name-20211029.tar.bz2 /home/pi/jetpack/
     hostname = socket.gethostname()
     timestamp = datetime.now().strftime('%Y%m%d')
-    filename = f'{hostname}-{timestamp}.tar.bz2'
+    filename = f'{hostname}-{timestamp}-local.tar.bz2'
     command = ['tar', 'jcvf', f'{HOME}/data/{filename}', f'{HOME}/jetpack']
+    run_command(command)
+
+    # move old dir out of the way
+    # TODO
+    command = ['mv', '-v', f'{HOME}/jetpack', f'{HOME}/data/{filename}', f'{HOME}/jetpack-backup']
     run_command(command)
 
     # application unpack
     # tar jxvf data/flatcat-20211020.tar.bz2
-    filename = f'flatcat-20211020.tar.bz2'
+    # filename = f'flatcat-20211020.tar.bz2'
+    if args.install_version == 'current':
+        args.install_version = "20211020"
+    filename = f'flatcat-{args.install_version}.tar.bz2'
     command = ['tar', 'jxvf', f'{HOME}/data/{filename}', '-C', '/']
     run_command(command)
 
+    # install crontab
+    # TODO
+    
     # application restart
     # /home/pi/jetpack/bootscripts/starttmux.sh
     command = ['{HOME}/jetpack/bootscripts/starttmux.sh']
@@ -126,8 +141,10 @@ if __name__ == '__main__':
     subparsers = parser.add_subparsers(
         help='auto command help', dest='mode')
     subparser_download = subparsers.add_parser('download', help='download help')
+    subparser_download.add_argument("-i", "--install-version", dest='install_version', help="Which version to install [current]", default = 'current')
     
     subparser_install = subparsers.add_parser('install', help='install help')
+    subparser_install.add_argument("-i", "--install-version", dest='install_version', help="Which version to install [current]", default = 'current')
 
     subparser_uuid = subparsers.add_parser('uuid', help='uuid help')
 
