@@ -53,12 +53,15 @@ def download_from_url_into_file(url, location):
                 f.flush()
     return location
 
-def run_command(command):
+def run_command(command, hot=False):
     print(f'run_command command = {" ".join(command)}')
-    # try:
-    #     run(command, check=True)
-    # except (CalledProcessError, FileNotFoundError) as e:
-    #     print(f'error {e}')
+    if hot:
+        try:
+            run(command, check=True)
+        except (CalledProcessError, FileNotFoundError) as e:
+            print(f'error {e}')
+    else:
+        print(f'dry run')
 
 def main_uuid(args):
     """main_uuid
@@ -102,7 +105,7 @@ def main_install(args):
     # application stop
     # tmux kill-session -t flatcat
     command = ['tmux', 'kill-session', '-t', 'flatcat']
-    run_command(command)
+    run_command(command, args.run_hot)
 
     # application backup
     # tar jcvf flatcat-20211020.tar.bz2 jetpack/
@@ -111,12 +114,12 @@ def main_install(args):
     timestamp = datetime.now().strftime('%Y%m%d')
     filename = f'{hostname}-{timestamp}-local.tar.bz2'
     command = ['tar', 'jcvf', f'{HOME}/data/{filename}', f'{HOME}/jetpack']
-    run_command(command)
+    run_command(command, args.run_hot)
 
     # move old dir out of the way
     # TODO
     command = ['mv', '-v', f'{HOME}/jetpack', f'{HOME}/data/{filename}', f'{HOME}/jetpack-backup']
-    run_command(command)
+    run_command(command, args.run_hot)
 
     # application unpack
     # tar jxvf data/flatcat-20211020.tar.bz2
@@ -125,7 +128,7 @@ def main_install(args):
         args.install_version = "20211020"
     filename = f'flatcat-{args.install_version}.tar.bz2'
     command = ['tar', 'jxvf', f'{HOME}/data/{filename}', '-C', '/']
-    run_command(command)
+    run_command(command, args.run_hot)
 
     # install crontab
     # TODO
@@ -133,7 +136,7 @@ def main_install(args):
     # application restart
     # /home/pi/jetpack/bootscripts/starttmux.sh
     command = ['{HOME}/jetpack/bootscripts/starttmux.sh']
-    run_command(command)
+    run_command(command, args.run_hot)
     return
 
 if __name__ == '__main__':
@@ -145,6 +148,7 @@ if __name__ == '__main__':
     
     subparser_install = subparsers.add_parser('install', help='install help')
     subparser_install.add_argument("-i", "--install-version", dest='install_version', help="Which version to install [current]", default = 'current')
+    subparser_install.add_argument("-r", "--run-hot", dest='run_hot', action='store_true', default=False, help="Really run commands [False]")
 
     subparser_uuid = subparsers.add_parser('uuid', help='uuid help')
 
