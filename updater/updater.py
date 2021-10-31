@@ -135,7 +135,7 @@ def main_install(args):
     
     # application restart
     # /home/pi/jetpack/bootscripts/starttmux.sh
-    command = ['{HOME}/jetpack/bootscripts/starttmux.sh']
+    command = [f'{HOME}/jetpack/bootscripts/starttmux.sh']
     run_command(command, args.run_hot)
     return
 
