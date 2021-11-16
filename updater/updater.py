@@ -44,6 +44,11 @@ def create_directories():
                 print(f'creating directory {directory_path}')
             os.mkdir(directory_path)
 
+def is_running():
+    """flatcat app is running
+    """
+    pass
+
 # def download2():
 #     resp = requests.get('http://www.mywebsite.com/user')
 #     resp = requests.post('http://www.mywebsite.com/user')
@@ -130,7 +135,7 @@ def main_install(args):
 
     # move old dir out of the way
     # TODO
-    command = ['mv', '-v', f'{HOME}/jetpack', f'{HOME}/data/{filename}', f'{HOME}/jetpack-backup']
+    command = ['mv', '-v', f'{HOME}/jetpack', f'{HOME}/jetpack-backup-{{timestamp}']
     run_command(command, args.run_hot)
 
     # application unpack
