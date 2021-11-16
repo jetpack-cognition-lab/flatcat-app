@@ -1,3 +1,5 @@
+"""flatcat-app updater
+"""
 import sys
 import os
 import urllib3
@@ -25,13 +27,23 @@ http = urllib3.PoolManager()
 headers = {}
 
 HOME = os.environ['HOME']
+VERBOSE = True
 
 from config import base_url
 
 def create_uuid(k=4):
     alphabet = string.ascii_lowercase + string.digits
     return ''.join(random.choices(alphabet, k=k))
-    
+
+def create_directories():
+    directories = ['jetpack', 'data', 'work']
+    for directory in directories:
+        directory_path = f'{HOME}/{directory}'
+        if not os.path.exists(directory_path):
+            if VERBOSE:
+                print(f'creating directory {directory_path}')
+            os.mkdir(directory_path)
+
 # def download2():
 #     resp = requests.get('http://www.mywebsite.com/user')
 #     resp = requests.post('http://www.mywebsite.com/user')
@@ -157,6 +169,8 @@ if __name__ == '__main__':
     # 20211202
     print(f'__main__ args = {args}')
 
+    # check directories / initialize
+    create_directories()
     
     if args.mode == 'download':
         _main = main_download

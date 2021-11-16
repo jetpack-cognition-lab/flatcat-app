@@ -1,4 +1,10 @@
-# Getting Started with Create React App
+# flatcat-app
+
+This project consists of two components, a python library to manage
+the flatcat software installation and a react frontent to control your
+flatcat via a graphical user interface (GUI).
+
+# Getting Started with Create React App (default React README)
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
