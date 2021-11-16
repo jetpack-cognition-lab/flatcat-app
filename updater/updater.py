@@ -135,7 +135,7 @@ def main_install(args):
 
     # move old dir out of the way
     # TODO
-    command = ['mv', '-v', f'{HOME}/jetpack', f'{HOME}/jetpack-backup-{{timestamp}']
+    command = ['mv', '-v', f'{HOME}/jetpack', f'{HOME}/jetpack-backup-{timestamp}']
     run_command(command, args.run_hot)
 
     # application unpack
