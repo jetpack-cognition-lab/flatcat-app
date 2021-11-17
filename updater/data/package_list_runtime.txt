@@ -1,0 +1,14 @@
+flatcat-ux0/ux0_serial
+flatcat-ux0/flatcat.dat.dist
+flatcat-setup/readme.txt
+flatcat-setup/boot
+flatcat-setup/boot/start-tmux.sh
+flatcat-setup/boot/start-ap-managed-wifi.sh
+flatcat-setup/network
+flatcat-setup/network/hostapd.conf
+flatcat-setup/network/interfaces
+flatcat-setup/network/wpa_supplicant.conf
+flatcat-setup/crontabfile
+flatcat-app/updater/updater.py
+flatcat-app/updater/config.py
+flatcat-app/requirements.txt

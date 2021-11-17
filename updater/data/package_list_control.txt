@@ -1,0 +1,4 @@
+flatcat-app/updater/updater-pre.py
+flatcat-app/updater/updater-post.py
+flatcat-app/updater/config.py
+flatcat-app/requirements.txt
