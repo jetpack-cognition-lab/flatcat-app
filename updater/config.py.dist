@@ -1,0 +1,5 @@
+base_hostname = "base.jetpack.cl"
+base_url = f"https://{base_hostname}/flatcat/updates"
+base_home = "/home/pi"
+base_local = f"{base_home}/jetpack"
+base_work = f"{base_home}/work"

@@ -40,64 +40,20 @@ VERBOSE = True
 
 from config import (
     base_url,
-    base_hostname
+    base_hostname,
+    base_home,
+    base_local,
+    base_work
 )
 
-def create_uuid(k=4):
-    alphabet = string.ascii_lowercase + string.digits
-    return ''.join(random.choices(alphabet, k=k))
-
-def create_directories():
-    directories = ['jetpack', 'data', 'work']
-    for directory in directories:
-        directory_path = f'{HOME}/{directory}'
-        if not os.path.exists(directory_path):
-            if VERBOSE:
-                print(f'creating directory {directory_path}')
-            os.mkdir(directory_path)
-
-def create_timestamp():
-    return datetime.now().strftime('%Y%m%d-%H%M%S')
-
-def is_running():
-    """flatcat app is running
-    """
-    pass
-
-# def download2():
-#     resp = requests.get('http://www.mywebsite.com/user')
-#     resp = requests.post('http://www.mywebsite.com/user')
-#     resp = requests.put('http://www.mywebsite.com/user/put')
-#     resp = requests.delete('http://www.mywebsite.com/user/delete')
-
-def download_from_url_into_file(url, location):
-    # with requests.get(url, stream=True) as r:
-    #     with open(location, 'wb') as f:
-    #         shutil.copyfileobj(r.raw, f)
-
-    r = requests.get(url, stream=True)
-    # path = '/some/path/for/file.txt'
-    with open(location, 'wb') as f:
-        total_length = int(r.headers.get('content-length'))
-        for chunk in progress.bar(r.iter_content(chunk_size=1024), expected_size=(total_length/1024) + 1):
-            if chunk:
-                f.write(chunk)
-                f.flush()
-    return location
-
-def run_command(command, hot=False):
-    if VERBOSE:
-        print(f'run_command command = {" ".join(command)}')
-    success = True
-    if hot:
-        try:
-            run(command, check=True)
-        except (CalledProcessError, FileNotFoundError) as e:
-            success = False
-            print(f'error {e}')
-    else:
-        print(f'dry run')
-    return success
+from updaterlib import (
+    create_uuid,
+    create_directories,
+    create_timestamp,
+    is_running,
+    download_from_url_into_file,
+    run_command
+)
 
 def main_uuid(args):
     """main_uuid
@@ -125,7 +81,7 @@ def main_download(args):
         
     call_url = base_url + '/' + current_file
     print(f'call_url = {call_url}')
-    location = download_from_url_into_file(call_url, f'{HOME}/data/{current_file}')
+    location = download_from_url_into_file(call_url, f'{base_work}/{current_file}')
 
 def main_install(args):
     """main_install
@@ -143,20 +99,20 @@ def main_install(args):
     command = ['tmux', 'kill-session', '-t', 'flatcat']
     run_command(command, args.run_hot)
 
+    timestamp = create_timestamp()
     # application backup
     if args.install_backup:
         # tar jcvf flatcat-20211020.tar.bz2 jetpack/
         # tar jcvf /home/pi/data/flatcat-name-20211029.tar.bz2 /home/pi/jetpack/
         hostname = socket.gethostname()
-        timestamp = create_timestamp()
         filename = f'{hostname}-{timestamp}-local.tar.bz2'
-        command = ['tar', 'jcvf', f'{HOME}/data/{filename}', f'{HOME}/jetpack']
+        command = ['tar', 'jcvf', f'{base_work}/{filename}', base_local]
         run_command(command, args.run_hot)
 
-    # move old dir out of the way
-    # TODO
-    command = ['mv', '-v', f'{HOME}/jetpack', f'{HOME}/jetpack-backup-{timestamp}']
-    run_command(command, args.run_hot)
+    # # move old dir out of the way
+    # base_local_old = f'{base_work}/jetpack-backup-{timestamp}'
+    # command = ['mv', '-v', base_local, base_local_old]
+    # run_command(command, args.run_hot)
 
     # application unpack
     # tar jxvf data/flatcat-20211020.tar.bz2
@@ -164,31 +120,40 @@ def main_install(args):
     if args.install_version == 'current':
         args.install_version = "20211020"
 
-    # unpack archive
+    # unpack top-level archive
     filename = f'flatcat-{args.install_version}.ar'
-    command = ['ar', 'x', '--output', f'{HOME}/data/', f'{HOME}/data/{filename}']
+    # command = ['ar', 'x', '--output', f'{HOME}/data/', f'{HOME}/data/{filename}']
+    command = ['ar', 'x', f'{base_work}/{filename}']
     run_command(command, args.run_hot)
-    
+
+    # unpck control tar
     filename = f'flatcat-{args.install_version}-control.tar.bz2'
-    command = ['tar', 'jxvf', f'{HOME}/data/{filename}', '-C', '/']
-    run_command(command, args.run_hot)
-    
-    command = ['python', f'{HOME}/jetpack/flatcat-app/updater/updater-pre.py']
+    command = ['mv', filename, f'{base_work}/']
+    run_command(command, args.run_hot)    
+    command = ['tar', 'jxvf', f'{base_work}/{filename}', '-C', f'{base_home}']
     run_command(command, args.run_hot)
 
+    # run pre-install script
+    command = ['python', f'{base_local}/flatcat-app/updater/updater-pre.py']
+    run_command(command, args.run_hot)
+
+    # unpack data tar
     filename = f'flatcat-{args.install_version}-data.tar.bz2'
-    command = ['tar', 'jxvf', f'{HOME}/data/{filename}', '-C', '/']
+    command = ['mv', filename, f'{base_work}/']
+    run_command(command, args.run_hot)    
+    command = ['tar', 'jxvf', f'{base_work}/{filename}', '-C', f'{base_home}']
     run_command(command, args.run_hot)
 
-    # TODO
+    # run post-install script
     # install crontab
-    command = ['python', f'{HOME}/jetpack/flatcat-app/updater/updater-post.py']
+    command = ['python', f'{base_local}/flatcat-app/updater/updater-post.py']
+    # '--backup', base_local_old]
     run_command(command, args.run_hot)
     
     # application restart
     # /home/pi/jetpack/bootscripts/starttmux.sh
     # /home/pi/jetpack/setup/boot/start-tmux.sh
-    command = [f'{HOME}/jetpack/flatcat-setup/boot/start-tmux.sh']
+    command = [f'{base_local}/flatcat-setup/boot/start-tmux.sh']
     run_command(command, args.run_hot)
     return
 
@@ -230,16 +195,19 @@ def main_package(args):
 
     # create full archive with data + control a la debian
     timestamp = create_timestamp()
+
     # tar command transforming the path with raspberry prefix, taking inputs from a file
     # package data
     package_data_file_name = f'flatcat-app/updater/data/flatcat-{timestamp}-data.tar.bz2'
-    package_data_command = f'tar --transform s/^flatcat-/home\/pi\/jetpack\/flatcat-/ -jcf {package_data_file_name} -T flatcat-app/updater/data/package_list_runtime.txt'.split(' ')
+    # package_data_command = f'tar --transform s/^flatcat-/home\/pi\/jetpack\/flatcat-/ -jcf {package_data_file_name} -T flatcat-app/updater/data/package_list_runtime.txt'.split(' ')
+    package_data_command = f'tar --transform s/^flatcat-/jetpack\/flatcat-/ -jcf {package_data_file_name} -T flatcat-app/updater/data/package_list_runtime.txt'.split(' ')
     print(f'package_data_command = {package_data_command}')
     run_command(package_data_command, args.run_hot)
 
     # package control
     package_control_file_name = f'flatcat-app/updater/data/flatcat-{timestamp}-control.tar.bz2'
-    package_control_command = f'tar --transform s/^flatcat-/home\/pi\/jetpack\/flatcat-/ -jcf {package_control_file_name} -T flatcat-app/updater/data/package_list_control.txt'.split(' ')
+    # package_control_command = f'tar --transform s/^flatcat-/home\/pi\/jetpack\/flatcat-/ -jcf {package_control_file_name} -T flatcat-app/updater/data/package_list_control.txt'.split(' ')
+    package_control_command = f'tar --transform s/^flatcat-/jetpack\/flatcat-/ -jcf {package_control_file_name} -T flatcat-app/updater/data/package_list_control.txt'.split(' ')
     print(f'package_control_command = {package_control_command}')
     run_command(package_control_command, args.run_hot)
 
