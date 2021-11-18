@@ -10,5 +10,5 @@ flatcat-setup/network/interfaces
 flatcat-setup/network/wpa_supplicant.conf
 flatcat-setup/crontabfile
 flatcat-app/updater/updater.py
-flatcat-app/updater/config.py
+flatcat-app/updater/config.py.dist
 flatcat-app/requirements.txt
