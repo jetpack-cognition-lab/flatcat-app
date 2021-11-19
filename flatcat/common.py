@@ -11,7 +11,7 @@ import logging
 
 from datetime import datetime
 from clint.textui import progress
-from subprocess import run, CalledProcessError
+from subprocess import run, CalledProcessError, PIPE
 
 from config import (
     base_url,
@@ -21,7 +21,7 @@ from config import (
     base_work
 )
 
-from updaterlogger import create_logger
+from flatcat.logging import create_logger
 
 VERBOSE = True
 
@@ -33,6 +33,10 @@ def updater_parser():
         help='flatcat-app/updater command help', dest='mode')
     subparser_uuid = subparsers.add_parser('uuid', help='create new uuid help')
     
+    subparser_list = subparsers.add_parser('list', help='Get list of update files help')
+
+    subparser_current = subparsers.add_parser('current', help='Get current update file help')
+
     subparser_download = subparsers.add_parser('download', help='download update file help')
     subparser_download.add_argument("-i", "--install-version", dest='install_version', help="Which version to install [current]", default = 'current')
     
@@ -79,6 +83,42 @@ def is_running():
 #     resp = requests.put('http://www.mywebsite.com/user/put')
 #     resp = requests.delete('http://www.mywebsite.com/user/delete')
 
+def get_list_remote(call_url=None):
+    if call_url is None:
+        call_url = base_url
+    logger.info(f'getting = {call_url}')
+    r = requests.get(call_url)
+    # TODO: this is the raw html, parse that or get .txt file listing
+    list_of_updates = r.text.strip()
+    logger.info(f'list_of_updates {list_of_updates}')
+    # logger.info(f"new {current_version > args.installed_version}")
+    return list_of_updates
+
+def get_current_remote(call_url=None):
+    if call_url is None:
+        call_url = base_url + '/current.txt'
+    logger.info(f'getting = {call_url}')
+    r = requests.get(call_url)
+    current_file = r.text.strip()
+    current_version = current_file.replace(".tar.bz2", "").replace(".ar", "").replace("flatcat-", "")
+    logger.info(f'current_file = {current_file}, current_version = {current_version}')
+    # logger.info(f"new {current_version > args.installed_version}")
+    return current_file, current_version
+
+# def get_current_remote_2():
+#     call_url = base_url + '/current.txt'
+#     logger.info(f'getting = {call_url}')
+#     r = http.request(
+#         'GET',
+#         call_url,
+#         headers=headers,
+#     )
+#     current_file = r.data.decode().strip()
+#     current_version = current_file.replace(".tar.bz2", "").replace(".ar", "").replace("flatcat-", "")
+#     logger.info(f'current_file = {current_file}, current_version = {current_version}')
+#     # logger.info(f"new {current_version > args.installed_version}")
+#     return current_file, current_version
+
 def download_from_url_into_file(url, location):
     # with requests.get(url, stream=True) as r:
     #     with open(location, 'wb') as f:
@@ -98,13 +138,17 @@ def run_command(command, hot=False):
     if VERBOSE:
         logger.info(f'run_command command = {" ".join(command)}')
     success = True
+    result_ = None
     if hot:
         try:
-            run(command, check=True)
+            result = run(command, stdout=PIPE, check=True)
+            result_ = result.stdout.decode('utf-8')
+            logger.info(f'{result_}')
         except (CalledProcessError, FileNotFoundError) as e:
             success = False
             logger.error(f'error {e}')
     else:
         logger.info(f'dry run')
-    return success
+    # result.stdout.decode('utf-8')
+    return success, result_
 

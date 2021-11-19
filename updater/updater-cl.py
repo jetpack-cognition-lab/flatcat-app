@@ -27,7 +27,7 @@ from clint.textui import progress
 from subprocess import run, CalledProcessError
 from datetime import datetime
 
-http = urllib3.PoolManager()
+# http = urllib3.PoolManager()
 
 # import urllib
 # urllib.urlretrieve("http://www.example.com/songs/mp3.mp3", "mp3.mp3")
@@ -45,33 +45,20 @@ from config import (
     base_work
 )
 
-from updaterlib import (
+from flatcat.common import (
     create_uuid,
     create_directories,
     create_timestamp,
     is_running,
     download_from_url_into_file,
+    get_current_remote,
     run_command,
     updater_parser
 )
 
-from updaterlogger import create_logger
+from flatcat.logging import create_logger
 
 logger = create_logger(sys.argv[0], 'info')
-
-def get_current_remote():
-    call_url = base_url + '/current.txt'
-    logger.info(f'getting = {call_url}')
-    r = http.request(
-        'GET',
-        call_url,
-        headers=headers,
-    )
-    current_file = r.data.decode().strip()
-    current_version = current_file.replace(".tar.bz2", "").replace(".ar", "").replace("flatcat-", "")
-    logger.info(f'current_file = {current_file}, current_version = {current_version}')
-    # logger.info(f"new {current_version > args.installed_version}")
-    return current_file, current_version
 
 def get_current_local():
     pass
@@ -129,7 +116,7 @@ def main_install(args):
     # tar jxvf data/flatcat-20211020.tar.bz2
     # filename = f'flatcat-20211020.tar.bz2'
     if args.install_version == 'current':
-        args.install_version = "20211020"
+        _, args.install_version  = get_current_remote() # "20211020"
 
     # unpack top-level archive
     filename = f'flatcat-{args.install_version}.ar'
