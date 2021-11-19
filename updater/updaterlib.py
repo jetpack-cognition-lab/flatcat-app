@@ -2,10 +2,12 @@
 
 updaterlib
 """
-import os
+import argparse
+import os, sys
 import string
 import random
 import requests
+import logging
 
 from datetime import datetime
 from clint.textui import progress
@@ -19,8 +21,36 @@ from config import (
     base_work
 )
 
+from updaterlogger import create_logger
+
 VERBOSE = True
 
+logger = create_logger('updaterlib', 'info')
+
+def updater_parser():
+    parser = argparse.ArgumentParser()
+    subparsers = parser.add_subparsers(
+        help='flatcat-app/updater command help', dest='mode')
+    subparser_uuid = subparsers.add_parser('uuid', help='create new uuid help')
+    
+    subparser_download = subparsers.add_parser('download', help='download update file help')
+    subparser_download.add_argument("-i", "--install-version", dest='install_version', help="Which version to install [current]", default = 'current')
+    
+    subparser_install = subparsers.add_parser('install', help='install update file help')
+    subparser_install.add_argument("-i", "--install-version", dest='install_version', help="Which version to install [current]", default = 'current')
+    subparser_install.add_argument("-b", "--backup", dest='install_backup', action='store_true', default=False, help="Create tar.bz2 backup of current install [False]")
+    subparser_install.add_argument("-r", "--run-hot", dest='run_hot', action='store_true', default=False, help="Really run commands [False]")
+
+    subparser_package = subparsers.add_parser('package', help='package an update help')
+    subparser_package.add_argument("-r", "--run-hot", dest='run_hot', action='store_true', default=False, help="Really run commands [False]")
+    subparser_package.add_argument("-s", "--sdk", dest='package_version', help="Install full runtime or full sdk [runtime]", default = 'runtime')
+
+    subparser_upload = subparsers.add_parser('upload', help='upload an update help')
+    subparser_upload.add_argument("-f", "--filename", dest='filename', help="Which filename to upload [flatcat-20211117-171041.tar.bz2]", default = 'flatcat-20211117-171041.tar.bz2')
+    subparser_upload.add_argument("-r", "--run-hot", dest='run_hot', action='store_true', default=False, help="Really run commands [False]")
+
+    return parser
+    
 def create_uuid(k=4):
     alphabet = string.ascii_lowercase + string.digits
     return ''.join(random.choices(alphabet, k=k))
@@ -32,7 +62,7 @@ def create_directories():
         directory_path = f'{base_home}/{directory}'
         if not os.path.exists(directory_path):
             if VERBOSE:
-                print(f'creating directory {directory_path}')
+                logger.info(f'creating directory {directory_path}')
             os.mkdir(directory_path)
 
 def create_timestamp():
@@ -66,14 +96,15 @@ def download_from_url_into_file(url, location):
 
 def run_command(command, hot=False):
     if VERBOSE:
-        print(f'run_command command = {" ".join(command)}')
+        logger.info(f'run_command command = {" ".join(command)}')
     success = True
     if hot:
         try:
             run(command, check=True)
         except (CalledProcessError, FileNotFoundError) as e:
             success = False
-            print(f'error {e}')
+            logger.error(f'error {e}')
     else:
-        print(f'dry run')
+        logger.info(f'dry run')
     return success
+

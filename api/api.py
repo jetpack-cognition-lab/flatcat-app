@@ -47,7 +47,7 @@ def api_response_error(
 def get_current_time():
     return {'time': time.time()}
 
-@app.route('/update/check') # methods=['POST']
+@app.route('/updater/check') # methods=['POST']
 def update_check() -> Response:
     # url = request.json.get('url')
     task_url = "https://jetpack.cl"    

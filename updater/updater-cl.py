@@ -14,7 +14,6 @@ import os
 import urllib3
 import requests
 import shutil
-import argparse
 import json
 import time
 import os
@@ -52,35 +51,47 @@ from updaterlib import (
     create_timestamp,
     is_running,
     download_from_url_into_file,
-    run_command
+    run_command,
+    updater_parser
 )
+
+from updaterlogger import create_logger
+
+logger = create_logger(sys.argv[0], 'info')
+
+def get_current_remote():
+    call_url = base_url + '/current.txt'
+    logger.info(f'getting = {call_url}')
+    r = http.request(
+        'GET',
+        call_url,
+        headers=headers,
+    )
+    current_file = r.data.decode().strip()
+    current_version = current_file.replace(".tar.bz2", "").replace(".ar", "").replace("flatcat-", "")
+    logger.info(f'current_file = {current_file}, current_version = {current_version}')
+    # logger.info(f"new {current_version > args.installed_version}")
+    return current_file, current_version
+
+def get_current_local():
+    pass
 
 def main_uuid(args):
     """main_uuid
     """
     uuid_instance = create_uuid(k=4)
-    print(f"uuid = {uuid_instance}")
+    logger.info(f"uuid = {uuid_instance}")
     return uuid_instance
 
 def main_download(args):
     if args.install_version == 'current':
-        call_url = base_url + '/current.txt'
-        print(f'getting = {call_url}')
-        r = http.request(
-            'GET',
-            call_url,
-            headers=headers,
-        )
-        current_file = r.data.decode().strip()
-        current_version = current_file.replace(".tar.bz2", "").replace("flatcat-", "")
-        print(f'current_file = {current_file}, current_version = {current_version}')
-        print(f"new {current_version > args.installed_version}")
+        current_file, current_version = get_current_remote()
     else:
         current_version = args.install_version
         current_file = f'flatcat-{current_version}.tar.bz2'
         
     call_url = base_url + '/' + current_file
-    print(f'call_url = {call_url}')
+    logger.info(f'call_url = {call_url}')
     location = download_from_url_into_file(call_url, f'{base_work}/{current_file}')
 
 def main_install(args):
@@ -164,7 +175,7 @@ def main_package(args):
     - runtime vs. sdk version
     - list of control files in package
     """
-    print(f'main_package packaging new update')
+    logger.info(f'main_package packaging new update')
 
     # package_list_runtime = [
     #     # flatcat main controller
@@ -181,7 +192,7 @@ def main_package(args):
     #     'flatcat-setup/network/wpa_supplicant.conf',
     #     'flatcat-setup/crontabfile',
     # ]
-    # print(f'package_list_runtime =\n{pformat(package_list_runtime)}')
+    # logger.info(f'package_list_runtime =\n{pformat(package_list_runtime)}')
     
     # # write list to file
     # with open('package_list_runtime.txt', 'w') as f:
@@ -191,7 +202,7 @@ def main_package(args):
     # # read list from file
     # with open('flatcat-app/updater/package_list_runtime.txt', 'r') as f:
     #     l = [_.strip() for _ in f.readlines()] 
-    #     print(l)
+    #     logger.info(l)
 
     # create full archive with data + control a la debian
     timestamp = create_timestamp()
@@ -201,20 +212,20 @@ def main_package(args):
     package_data_file_name = f'flatcat-app/updater/data/flatcat-{timestamp}-data.tar.bz2'
     # package_data_command = f'tar --transform s/^flatcat-/home\/pi\/jetpack\/flatcat-/ -jcf {package_data_file_name} -T flatcat-app/updater/data/package_list_runtime.txt'.split(' ')
     package_data_command = f'tar --transform s/^flatcat-/jetpack\/flatcat-/ -jcf {package_data_file_name} -T flatcat-app/updater/data/package_list_runtime.txt'.split(' ')
-    print(f'package_data_command = {package_data_command}')
+    logger.info(f'package_data_command = {package_data_command}')
     run_command(package_data_command, args.run_hot)
 
     # package control
     package_control_file_name = f'flatcat-app/updater/data/flatcat-{timestamp}-control.tar.bz2'
     # package_control_command = f'tar --transform s/^flatcat-/home\/pi\/jetpack\/flatcat-/ -jcf {package_control_file_name} -T flatcat-app/updater/data/package_list_control.txt'.split(' ')
     package_control_command = f'tar --transform s/^flatcat-/jetpack\/flatcat-/ -jcf {package_control_file_name} -T flatcat-app/updater/data/package_list_control.txt'.split(' ')
-    print(f'package_control_command = {package_control_command}')
+    logger.info(f'package_control_command = {package_control_command}')
     run_command(package_control_command, args.run_hot)
 
     # package total
     package_file_name = f'flatcat-app/updater/data/flatcat-{timestamp}.ar'
     package_command = f'ar q {package_file_name} {package_data_file_name} {package_control_file_name}'.split(' ')
-    print(f'package_command = {package_command}')
+    logger.info(f'package_command = {package_command}')
     run_command(package_command, args.run_hot)
 
 def main_upload(args):
@@ -226,43 +237,22 @@ def main_upload(args):
     update_filename = os.path.basename(args.filename)
     update_filename_path = f"flatcat-app/updater/data/{update_filename}"
     upload_command = f"scp {update_filename_path} {base_hostname}:/home/www/jetpack_base/flatcat/updates/".split(' ')
-    print(f'upload_command = {upload_command}')
+    logger.info(f'upload_command = {upload_command}')
     uploaded = run_command(upload_command, args.run_hot)
 
     if not uploaded:
-        print('main_upload upload failed')
+        logger.info('main_upload upload failed')
         return
 
     update_current_command = ['ssh', 'base.jetpack.cl', f'echo {update_filename} >/home/www/jetpack_base/flatcat/updates/current.txt']
     run_command(update_current_command, args.run_hot)
     
-
 if __name__ == '__main__':
-    parser = argparse.ArgumentParser()
-    subparsers = parser.add_subparsers(
-        help='flatcat-app/updater command help', dest='mode')
-    subparser_uuid = subparsers.add_parser('uuid', help='create new uuid help')
-    
-    subparser_download = subparsers.add_parser('download', help='download update file help')
-    subparser_download.add_argument("-i", "--install-version", dest='install_version', help="Which version to install [current]", default = 'current')
-    
-    subparser_install = subparsers.add_parser('install', help='install update file help')
-    subparser_install.add_argument("-i", "--install-version", dest='install_version', help="Which version to install [current]", default = 'current')
-    subparser_install.add_argument("-b", "--backup", dest='install_backup', action='store_true', default=False, help="Create tar.bz2 backup of current install [False]")
-    subparser_install.add_argument("-r", "--run-hot", dest='run_hot', action='store_true', default=False, help="Really run commands [False]")
-
-    subparser_package = subparsers.add_parser('package', help='package an update help')
-    subparser_package.add_argument("-r", "--run-hot", dest='run_hot', action='store_true', default=False, help="Really run commands [False]")
-    subparser_package.add_argument("-s", "--sdk", dest='package_version', help="Install full runtime or full sdk [runtime]", default = 'runtime')
-
-    subparser_upload = subparsers.add_parser('upload', help='upload an update help')
-    subparser_upload.add_argument("-f", "--filename", dest='filename', help="Which filename to upload [flatcat-20211117-171041.tar.bz2]", default = 'flatcat-20211117-171041.tar.bz2')
-    subparser_upload.add_argument("-r", "--run-hot", dest='run_hot', action='store_true', default=False, help="Really run commands [False]")
-
+    parser = updater_parser()
     args = parser.parse_args()
     args.installed_version = '20211001'
     # 20211202
-    print(f'__main__ args = {args}')
+    logger.info(f'__main__ args = {args}')
 
     # check directories / initialize
     create_directories()
@@ -278,8 +268,8 @@ if __name__ == '__main__':
     elif args.mode == 'upload':
         _main = main_upload
     else:
-        print('Unknown mode {0}, exiting'.format(args.mode))
+        logger.info('Unknown mode {0}, exiting'.format(args.mode))
         sys.exit(1)
 
     ret = _main(args)
-    print(f'__main__ return {ret}')
+    logger.info(f'__main__ return {ret}')
