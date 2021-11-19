@@ -4,6 +4,16 @@ This project consists of two components, a python library to manage
 the flatcat software installation and a react frontent to control your
 flatcat via a graphical user interface (GUI).
 
+## updater
+
+## api
+
+Using [How To Create a React + Flask Project](https://blog.miguelgrinberg.com/post/how-to-create-a-react--flask-project) as a starting point
+
+All API code is in api/ directory
+
+Start flask backend with `yarn start-api`, will start running on port 5000
+
 # Getting Started with Create React App (default React README)
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).

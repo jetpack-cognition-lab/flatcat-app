@@ -26,6 +26,7 @@ yarn-error.log*
 # python
 venv
 __pycache__
+*/config.py
 
 # data
 *.bz2
