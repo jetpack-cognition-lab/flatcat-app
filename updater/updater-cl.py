@@ -27,12 +27,8 @@ from clint.textui import progress
 from subprocess import run, CalledProcessError
 from datetime import datetime
 
-# http = urllib3.PoolManager()
-
-# import urllib
-# urllib.urlretrieve("http://www.example.com/songs/mp3.mp3", "mp3.mp3")
-
 headers = {}
+headers_json = {'Content-Type': 'application/json'}
 
 HOME = os.environ['HOME']
 VERBOSE = True
@@ -52,8 +48,12 @@ from flatcat.common import (
     is_running,
     download_from_url_into_file,
     get_current_remote,
+    get_download_url,
     run_command,
-    updater_parser
+    ns2kw,
+    updater_parser,
+    updater_download,
+    updater_install
 )
 
 from flatcat.logging import create_logger
@@ -71,90 +71,19 @@ def main_uuid(args):
     return uuid_instance
 
 def main_download(args):
-    if args.install_version == 'current':
-        current_file, current_version = get_current_remote()
-    else:
-        current_version = args.install_version
-        current_file = f'flatcat-{current_version}.tar.bz2'
-        
-    call_url = base_url + '/' + current_file
-    logger.info(f'call_url = {call_url}')
-    location = download_from_url_into_file(call_url, f'{base_work}/{current_file}')
+    """main_download
+
+    Download `install_version` from repository and store locally
+    """
+    return updater_download(**(ns2kw(args)))
 
 def main_install(args):
     """main_install
 
     Install a downloaded package
-    1. stop running app
-    2. create backup of current version
-    3. unpack new version
-    4. test new version
-    5. start new version
-    6. clean up backup
     """
-    # application stop
-    # tmux kill-session -t flatcat
-    command = ['tmux', 'kill-session', '-t', 'flatcat']
-    run_command(command, args.run_hot)
-
-    timestamp = create_timestamp()
-    # application backup
-    if args.install_backup:
-        # tar jcvf flatcat-20211020.tar.bz2 jetpack/
-        # tar jcvf /home/pi/data/flatcat-name-20211029.tar.bz2 /home/pi/jetpack/
-        hostname = socket.gethostname()
-        filename = f'{hostname}-{timestamp}-local.tar.bz2'
-        command = ['tar', 'jcvf', f'{base_work}/{filename}', base_local]
-        run_command(command, args.run_hot)
-
-    # # move old dir out of the way
-    # base_local_old = f'{base_work}/jetpack-backup-{timestamp}'
-    # command = ['mv', '-v', base_local, base_local_old]
-    # run_command(command, args.run_hot)
-
-    # application unpack
-    # tar jxvf data/flatcat-20211020.tar.bz2
-    # filename = f'flatcat-20211020.tar.bz2'
-    if args.install_version == 'current':
-        _, args.install_version  = get_current_remote() # "20211020"
-
-    # unpack top-level archive
-    filename = f'flatcat-{args.install_version}.ar'
-    # command = ['ar', 'x', '--output', f'{HOME}/data/', f'{HOME}/data/{filename}']
-    command = ['ar', 'x', f'{base_work}/{filename}']
-    run_command(command, args.run_hot)
-
-    # unpck control tar
-    filename = f'flatcat-{args.install_version}-control.tar.bz2'
-    command = ['mv', filename, f'{base_work}/']
-    run_command(command, args.run_hot)    
-    command = ['tar', 'jxvf', f'{base_work}/{filename}', '-C', f'{base_home}']
-    run_command(command, args.run_hot)
-
-    # run pre-install script
-    command = ['python', f'{base_local}/flatcat-app/updater/updater-pre.py']
-    run_command(command, args.run_hot)
-
-    # unpack data tar
-    filename = f'flatcat-{args.install_version}-data.tar.bz2'
-    command = ['mv', filename, f'{base_work}/']
-    run_command(command, args.run_hot)    
-    command = ['tar', 'jxvf', f'{base_work}/{filename}', '-C', f'{base_home}']
-    run_command(command, args.run_hot)
-
-    # run post-install script
-    # install crontab
-    command = ['python', f'{base_local}/flatcat-app/updater/updater-post.py']
-    # '--backup', base_local_old]
-    run_command(command, args.run_hot)
+    return updater_install(**(ns2kw(args)))
     
-    # application restart
-    # /home/pi/jetpack/bootscripts/starttmux.sh
-    # /home/pi/jetpack/setup/boot/start-tmux.sh
-    command = [f'{base_local}/flatcat-setup/boot/start-tmux.sh']
-    run_command(command, args.run_hot)
-    return
-
 def main_package(args):
     """package an update
 

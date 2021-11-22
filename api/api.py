@@ -2,16 +2,28 @@ import sys
 from typing import Dict, Optional, Union
 import time
 from flask import (
+    current_app,
     Flask,
     json,
+    request,
     Response,
 )
 
 # sys.path.insert(0, '/home/src/QK/jetpack/flatcat-app')
-print(sys.path)
+# print(sys.path)
+
+from config import (
+    base_url,
+    base_work,
+)
+
 from flatcat.common import (
     get_current_remote,
-    get_list_remote
+    get_download_url,
+    get_list_remote,
+    download_from_url_into_file,
+    updater_download,
+    updater_install,
 )
 
 app = Flask(__name__)
@@ -87,7 +99,7 @@ def get_current_time():
 
 # update list: list available local updates
 @app.route('/updater/list') # methods=['POST']
-def updater_list() -> Response:
+def api_updater_list() -> Response:
     call_url = 'https://base.jetpack.cl/flatcat/updates/'
     list_of_updates = get_list_remote(call_url)
     return api_response_ok(
@@ -99,7 +111,7 @@ def updater_list() -> Response:
 
 # update check: check remote url if current.bin is greater than / in local files
 @app.route('/updater/current') # methods=['POST']
-def updater_current() -> Response:
+def api_updater_current() -> Response:
     # url = request.json.get('url')
     # task_url = "https://jetpack.cl"
     call_url = 'https://base.jetpack.cl/flatcat/updates/current.txt'
@@ -113,20 +125,33 @@ def updater_current() -> Response:
     )
 
 # update download: download current.bin from remote url
-@app.route('/updater/download') # methods=['POST']
-def updater_download() -> Response:
+@app.route('/updater/download', methods=['POST'])
+def api_updater_download() -> Response:
     # url = request.json.get('url')
     # task_url = "https://jetpack.cl"
-    call_url = 'https://base.jetpack.cl/flatcat/updates/download.txt'
-    download_file, download_version = download_from_url_into_file()
-    return api_response_ok(
-        {'message': 'current',
-         'url': f'{call_url}/current.txt',
-         'current_file': current_file,
-         'current_version': current_version
-        }
-    )
+    # call_url = 'https://base.jetpack.cl/flatcat/updates/download.txt'
+    current_app.logger.info(f'request = {request.json}')
+    install_version = request.json.get('install_version')
+
+    res = updater_download(**request.json)
+
+    res['message'] = 'download'
+    
+    return api_response_ok(res)
 
 # update apply / install: apply selected update
+@app.route('/updater/install', methods=['POST'])
+def api_updater_install() -> Response:
+    current_app.logger.info(f'request = {type(request.json)}')
+    current_app.logger.info(f'request = {request.json.keys()}')
+    install_version = request.json.get('install_version')
+    install_backup = request.json.get('install_backup')
+    run_hot = request.json.get('run_hot')
+    
+    res = updater_install(**request.json)
+    res['message'] = 'install'
+    
+    return api_response_ok(res)
+
 
 # settings: send OSC: toggle, use GET / POST

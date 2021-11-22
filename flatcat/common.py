@@ -1,6 +1,6 @@
 """flatcat-app/updater
 
-updaterlib
+updaterlib used by updater-cl (command line) and updater_api (flask API)
 """
 import argparse
 import os, sys
@@ -13,11 +13,16 @@ from datetime import datetime
 from clint.textui import progress
 from subprocess import run, CalledProcessError, PIPE
 
+# http = urllib3.PoolManager()
+
+# import urllib
+# urllib.urlretrieve("http://www.example.com/songs/mp3.mp3", "mp3.mp3")
+
 from config import (
-    base_url,
-    base_hostname,
     base_home,
+    base_hostname,
     base_local,
+    base_url,
     base_work
 )
 
@@ -26,6 +31,14 @@ from flatcat.logging import create_logger
 VERBOSE = True
 
 logger = create_logger('updaterlib', 'info')
+
+def ns2kw(ns):
+    """ns2kw
+
+    utility func to convert argparse namespace to dictionary
+    """
+    kw = dict([(_, getattr(ns, _)) for _ in dir(ns) if not _.startswith('_')])
+    return kw
 
 def updater_parser():
     parser = argparse.ArgumentParser()
@@ -119,6 +132,14 @@ def get_current_remote(call_url=None):
 #     # logger.info(f"new {current_version > args.installed_version}")
 #     return current_file, current_version
 
+def get_download_url(install_version):
+    if install_version == 'current':
+        current_file, current_version = get_current_remote()
+    else:
+        current_version = install_version
+        current_file = f'flatcat-{current_version}.tar.bz2'
+    return current_file, current_version
+
 def download_from_url_into_file(url, location):
     # with requests.get(url, stream=True) as r:
     #     with open(location, 'wb') as f:
@@ -136,7 +157,7 @@ def download_from_url_into_file(url, location):
 
 def run_command(command, hot=False):
     if VERBOSE:
-        logger.info(f'run_command command = {" ".join(command)}')
+        logger.info(f'run_command = {" ".join(command)}')
     success = True
     result_ = None
     if hot:
@@ -152,3 +173,105 @@ def run_command(command, hot=False):
     # result.stdout.decode('utf-8')
     return success, result_
 
+# main functions: download, install
+def updater_download(*args, **kwargs):
+    """updater_download
+
+    Download install_version from repository and store locally
+    """
+    current_file, current_version = get_download_url(kwargs['install_version'])
+    call_url = base_url + '/' + current_file
+    logger.info(f'call_url = {call_url}')
+    call_location = f'{base_work}/{current_file}'
+    logger.info(f'call_location = {call_location}')
+    location = download_from_url_into_file(call_url, call_location)
+    return {
+        'current_version': current_version,
+        'current_file': current_file,
+        'url': call_url,
+        'location': location
+    }
+
+def updater_install(*args, **kwargs):
+    """updater_install
+
+    Install the package install_version into the filesystem
+    """
+    commands = []
+    # application stop
+    # tmux kill-session -t flatcat
+    cmd_line = ['tmux', 'kill-session', '-t', 'flatcat']
+    cmd_status, cmd_output = run_command(cmd_line, kwargs['run_hot'])
+    commands.append({'cmd_line': cmd_line, 'cmd_status': cmd_status, 'cmd_output': cmd_output})
+
+    timestamp = create_timestamp()
+    # application backup
+    if kwargs['install_backup']:
+        # tar jcvf flatcat-20211020.tar.bz2 jetpack/
+        # tar jcvf /home/pi/data/flatcat-name-20211029.tar.bz2 /home/pi/jetpack/
+        hostname = socket.gethostname()
+        filename = f'{hostname}-{timestamp}-local.tar.bz2'
+        cmd_line = ['tar', 'jcvf', f'{base_work}/{filename}', base_local]
+        cmd_status, cmd_output = run_command(cmd_line, kwargs['run_hot'])
+        commands.append({'cmd_line': cmd_line, 'cmd_status': cmd_status, 'cmd_output': cmd_output})
+
+    # # move old dir out of the way
+    # base_local_old = f'{base_work}/jetpack-backup-{timestamp}'
+    # cmd_line = ['mv', '-v', base_local, base_local_old]
+    # cmd_status, cmd_output = run_command(cmd_line, kwargs['run_hot'])
+
+    # application unpack
+    # tar jxvf data/flatcat-20211020.tar.bz2
+    # filename = f'flatcat-20211020.tar.bz2'
+    if kwargs['install_version'] == 'current':
+        _, kwargs['install_version'] = get_current_remote() # "20211020"
+
+    # unpack top-level archive
+    filename = f"flatcat-{kwargs['install_version']}.ar"
+    # cmd_line = ['ar', 'x', '--output', f'{HOME}/data/', f'{HOME}/data/{filename}']
+    cmd_line = ['ar', 'x', f'{base_work}/{filename}']
+    cmd_status, cmd_output = run_command(cmd_line, kwargs['run_hot'])
+    commands.append({'cmd_line': cmd_line, 'cmd_status': cmd_status, 'cmd_output': cmd_output})
+
+    # unpack control tar
+    filename = f"flatcat-{kwargs['install_version']}-control.tar.bz2"
+    cmd_line = ['mv', filename, f'{base_work}/']
+    cmd_status, cmd_output = run_command(cmd_line, kwargs['run_hot'])    
+    commands.append({'cmd_line': cmd_line, 'cmd_status': cmd_status, 'cmd_output': cmd_output})
+
+    cmd_line = ['tar', 'jxvf', f'{base_work}/{filename}', '-C', f'{base_home}']
+    cmd_status, cmd_output = run_command(cmd_line, kwargs['run_hot'])
+    commands.append({'cmd_line': cmd_line, 'cmd_status': cmd_status, 'cmd_output': cmd_output})
+
+    # run pre-install script
+    cmd_line = ['python', f'{base_local}/flatcat-app/updater/updater-pre.py']
+    cmd_status, cmd_output = run_command(cmd_line, kwargs['run_hot'])
+    commands.append({'cmd_line': cmd_line, 'cmd_status': cmd_status, 'cmd_output': cmd_output})
+
+    # unpack data tar
+    filename = f"flatcat-{kwargs['install_version']}-data.tar.bz2"
+    cmd_line = ['mv', filename, f'{base_work}/']
+    cmd_status, cmd_output = run_command(cmd_line, kwargs['run_hot'])    
+    commands.append({'cmd_line': cmd_line, 'cmd_status': cmd_status, 'cmd_output': cmd_output})
+
+    cmd_line = ['tar', 'jxvf', f'{base_work}/{filename}', '-C', f'{base_home}']
+    cmd_status, cmd_output = run_command(cmd_line, kwargs['run_hot'])
+    commands.append({'cmd_line': cmd_line, 'cmd_status': cmd_status, 'cmd_output': cmd_output})
+
+    # run post-install script
+    # install crontab
+    cmd_line = ['python', f'{base_local}/flatcat-app/updater/updater-post.py']
+    # '--backup', base_local_old]
+    cmd_status, cmd_output = run_command(cmd_line, kwargs['run_hot'])
+    commands.append({'cmd_line': cmd_line, 'cmd_status': cmd_status, 'cmd_output': cmd_output})
+    
+    # application restart
+    # /home/pi/jetpack/bootscripts/starttmux.sh
+    # /home/pi/jetpack/setup/boot/start-tmux.sh
+    cmd_line = [f'{base_local}/flatcat-setup/boot/start-tmux.sh']
+    cmd_status, cmd_output = run_command(cmd_line, kwargs['run_hot'])
+    commands.append({'cmd_line': cmd_line, 'cmd_status': cmd_status, 'cmd_output': cmd_output})
+    
+    return {
+        'commands': commands
+    }

@@ -3,6 +3,7 @@ import requests
 import json
 
 from flatcat.common import (
+    ns2kw,
     create_directories,
     updater_parser
 )
@@ -11,6 +12,7 @@ from flatcat.logging import create_logger
 logger = create_logger(sys.argv[0], 'info')
 
 api_url = "http://localhost:5000"
+headers_json = {'Content-Type': 'application/json'}
 
 def main_list(args):
     """main_list
@@ -47,6 +49,25 @@ def main_download(args):
     """
     logger.info(f"main_download API")
     # call API download function
+    res = {}
+    # data = {
+    #     'install_version': args.install_version
+    # }
+    data = ns2kw(args)
+    call_url = f"{api_url}/updater/download"
+    r = requests.post(
+        call_url,
+        headers=headers_json,
+        json=data
+    )
+    # logger.info(f'response raw {dir(r)}')
+    logger.info(f'response raw {r.status_code}')
+    logger.info(f'response raw {r.headers}')
+    logger.info(f'response raw {r.url}')
+    if r.status_code in [200, 202]:
+        logger.info(f'response raw {r.text}')
+        res = json.loads(r.text)
+    return res
 
 def main_install(args):
     """main_download
@@ -55,6 +76,28 @@ def main_install(args):
     """
     ret = f"main_install API"
     logger.info(ret)
+    # call API download function
+    res = {}
+    # data = {
+    #     'install_version': args.install_version,
+    #     'install_backup': args.install_backup,
+    #     'run_hot': args.run_hot,
+    # }
+    data = ns2kw(args)
+    call_url = f"{api_url}/updater/install"
+    r = requests.post(
+        call_url,
+        headers=headers_json,
+        json=data
+    )
+    # logger.info(f'response raw {dir(r)}')
+    logger.info(f'response raw {r.url}')
+    logger.info(f'response raw {r.status_code}')
+    logger.info(f'response raw {r.headers}')
+    if r.status_code in [200, 202]:
+        logger.info(f'response raw {r.text}')
+        res = json.loads(r.text)
+    
     return ret
 
 def main_uuid(args):
