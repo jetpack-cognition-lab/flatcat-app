@@ -1,5 +1,7 @@
 flatcat-app/updater/updater-pre.py
 flatcat-app/updater/updater-post.py
-flatcat-app/updater/config.py.dist
-flatcat-app/updater/updaterlib.py
+flatcat-app/flatcat/__init__.py
+flatcat-app/flatcat/common.py
+flatcat-app/flatcat/logging.py
+flatcat-app/config.py.dist
 flatcat-app/requirements.txt

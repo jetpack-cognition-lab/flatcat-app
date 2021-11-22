@@ -9,6 +9,10 @@ flatcat-setup/network/hostapd.conf
 flatcat-setup/network/interfaces
 flatcat-setup/network/wpa_supplicant.conf
 flatcat-setup/crontabfile
-flatcat-app/updater/updater.py
-flatcat-app/updater/config.py.dist
+flatcat-app/updater/updater-cl.py
+flatcat-app/updater/updater-api.py
+flatcat-app/flatcat/__init__.py
+flatcat-app/flatcat/common.py
+flatcat-app/flatcat/logging.py
+flatcat-app/config.py.dist
 flatcat-app/requirements.txt

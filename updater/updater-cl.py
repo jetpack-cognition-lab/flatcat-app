@@ -122,27 +122,37 @@ def main_package(args):
 
     # create full archive with data + control a la debian
     timestamp = create_timestamp()
-
+    kwargs = ns2kw(args)
+    
     # tar command transforming the path with raspberry prefix, taking inputs from a file
     # package data
     package_data_file_name = f'flatcat-app/updater/data/flatcat-{timestamp}-data.tar.bz2'
     # package_data_command = f'tar --transform s/^flatcat-/home\/pi\/jetpack\/flatcat-/ -jcf {package_data_file_name} -T flatcat-app/updater/data/package_list_runtime.txt'.split(' ')
     package_data_command = f'tar --transform s/^flatcat-/jetpack\/flatcat-/ -jcf {package_data_file_name} -T flatcat-app/updater/data/package_list_runtime.txt'.split(' ')
     logger.info(f'package_data_command = {package_data_command}')
-    run_command(package_data_command, args.run_hot)
-
+    cmd_status, cmd_output = run_command(package_data_command, kwargs['run_hot'])
+    if not cmd_status:
+        logger.error(f'package_data_command failed, stopping')
+        return
+    
     # package control
     package_control_file_name = f'flatcat-app/updater/data/flatcat-{timestamp}-control.tar.bz2'
     # package_control_command = f'tar --transform s/^flatcat-/home\/pi\/jetpack\/flatcat-/ -jcf {package_control_file_name} -T flatcat-app/updater/data/package_list_control.txt'.split(' ')
     package_control_command = f'tar --transform s/^flatcat-/jetpack\/flatcat-/ -jcf {package_control_file_name} -T flatcat-app/updater/data/package_list_control.txt'.split(' ')
     logger.info(f'package_control_command = {package_control_command}')
-    run_command(package_control_command, args.run_hot)
+    cmd_status, cmd_output = run_command(package_control_command, kwargs['run_hot'])
+    if not cmd_status:
+        logger.error(f'package_data_command failed, stopping')
+        return
 
     # package total
     package_file_name = f'flatcat-app/updater/data/flatcat-{timestamp}.ar'
     package_command = f'ar q {package_file_name} {package_data_file_name} {package_control_file_name}'.split(' ')
     logger.info(f'package_command = {package_command}')
-    run_command(package_command, args.run_hot)
+    cmd_status, cmd_output = run_command(package_command, kwargs['run_hot'])
+    if not cmd_status:
+        logger.error(f'package_data_command failed, stopping')
+        return
 
 def main_upload(args):
     """upload a packaged update
@@ -150,18 +160,20 @@ def main_upload(args):
     - upload the package file
     - update current.txt
     """
-    update_filename = os.path.basename(args.filename)
+    kwargs = ns2kw(args)
+    
+    update_filename = os.path.basename(kwargs['filename'])
     update_filename_path = f"flatcat-app/updater/data/{update_filename}"
     upload_command = f"scp {update_filename_path} {base_hostname}:/home/www/jetpack_base/flatcat/updates/".split(' ')
     logger.info(f'upload_command = {upload_command}')
-    uploaded = run_command(upload_command, args.run_hot)
+    uploaded = run_command(upload_command, kwargs['run_hot'])
 
     if not uploaded:
         logger.info('main_upload upload failed')
         return
 
     update_current_command = ['ssh', 'base.jetpack.cl', f'echo {update_filename} >/home/www/jetpack_base/flatcat/updates/current.txt']
-    run_command(update_current_command, args.run_hot)
+    run_command(update_current_command, kwargs['run_hot'])
     
 if __name__ == '__main__':
     parser = updater_parser()
