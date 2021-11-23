@@ -37,11 +37,13 @@ python3 -m venv api/venv
 . api/venv/bin/activate
 pip install -r requirements.txt
 ```
+Also you need to create the backend configuration file with
 
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+```
+cp config.py.dist config.py
+```
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+Then manually edit config.py and adjust your paths.
 
 ### `yarn start`
 
