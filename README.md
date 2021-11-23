@@ -14,13 +14,34 @@ All API code is in api/ directory
 
 Start flask backend with `yarn start-api`, will start running on port 5000
 
-# Getting Started with Create React App (default React README)
+# Starting the app
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
 ## Available Scripts
 
 In the project directory, you can run:
+
+### `yarn start-api`
+
+Runs the api server. Before starting it, you will have to export the
+path to the flatcat-app directory to your PYTHONPATH variable, eg by
+
+`export PYTHONPATH /path/to/flatcat-app:$PYTHONPATH`
+
+If you are running from a fresh git clone, you will need to set up your Python venv with
+
+```python
+cd flatcat-app
+python3 -m venv api/venv
+. api/venv/bin/activate
+pip install -r requirements.txt
+```
+
+Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+
+The page will reload if you make edits.\
+You will also see any lint errors in the console.
 
 ### `yarn start`
 
