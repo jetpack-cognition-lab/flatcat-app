@@ -27,7 +27,8 @@ function App() {
   // const [trainingWheels, setTrainingWheels] = useState(true)
 
   const [currentTime, setCurrentTime] = useState(0);
-  const [updaterList, setUpdaterList] = useState('');
+  const [updaterList, setUpdaterList] = useState([]);
+  const [updaterListSelected, setUpdaterListSelected] = useState('current');
 
   const [fcuiOnOffs, setFcuiOnOffs] = useState([
     {
@@ -85,6 +86,30 @@ function App() {
     setFcuiOnOffs(newArr)
   }
 
+  const handleSubmitUpdaterList = (event) => {
+    console.log(`handleSubmitUpdaterList pre ${updaterListSelected}`)
+    const requestOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(
+	{
+	  title: 'React POST Request Example',
+	  install_version: updaterListSelected
+	}
+      )
+    };
+    fetch('/updater/download', requestOptions).then(res => res.json()).then(data => {
+      // setCurrentTime(data.time);
+      console.log(data.message)
+    });    
+  }
+
+  const handleChangeUpdaterList = (event) => {
+    console.log(`handleChangeUpdaterList pre ${updaterListSelected}`)
+    setUpdaterListSelected(event.target.value)
+    console.log(`handleChangeUpdaterList post ${updaterListSelected}`)
+  }
+
   // current time
   useEffect(() => {
     fetch('/time').then(res => res.json()).then(data => {
@@ -112,8 +137,14 @@ function App() {
 
         <p>The current time is {currentTime}.</p>
 
-        <p>List of updates {updaterList}</p>
-
+    <div>
+      <p>Available updates</p>
+      <select onChange={handleChangeUpdaterList}>
+      {updaterList.sort((a, b) => (a < b) ? 1 : -1).map(team => <option key={team} value={team}>{team}</option>)}
+      </select>
+      <button onClick={handleSubmitUpdaterList}>Get Selected Value</button>
+      </div>
+      
         <section className={`${updateAvail === 'available' ? 'visible' : 'hidden'}`}>
         <h2>Update available</h2>
         <Button color='green' text='download & install' postpone={hideUpdate} abort />
