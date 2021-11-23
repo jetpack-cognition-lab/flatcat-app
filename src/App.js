@@ -1,10 +1,10 @@
-import React, { useState } from "react"
+import React, { useState, useEffect } from "react"
 import './App.css'
 import Header from './components/Header'
 import Button from './components/Button'
 import OnOff from './components/OnOff'
 import SVGseparator from './components/SVGseparator'
-import BurgerButton from './components/BurgerButton'
+// import BurgerButton from './components/BurgerButton'
 import Inputer from './components/Inputer'
 
 import ReactSlider from "react-slider";
@@ -25,6 +25,9 @@ function App() {
   // available, unknown, updated
 
   // const [trainingWheels, setTrainingWheels] = useState(true)
+
+  const [currentTime, setCurrentTime] = useState(0);
+  const [updaterList, setUpdaterList] = useState('');
 
   const [fcuiOnOffs, setFcuiOnOffs] = useState([
     {
@@ -58,7 +61,8 @@ function App() {
 
   ])
 
-
+  console.log(`flatcat-app/App.js ${fcuiName}`)
+  
   // FUNCTIONS
 
   const hideUpdate = () => {
@@ -81,6 +85,20 @@ function App() {
     setFcuiOnOffs(newArr)
   }
 
+  // current time
+  useEffect(() => {
+    fetch('/time').then(res => res.json()).then(data => {
+      setCurrentTime(data.time);
+    });
+  }, []);
+
+  // get list of updates
+  useEffect(() => {
+    fetch('/updater/list').then(res => res.json()).then(data => {
+      console.log(`data ${data.data.message}`)
+      setUpdaterList(data.data.list_of_updates);
+    });
+  }, []);
 
 
 
@@ -92,7 +110,11 @@ function App() {
 
         <Header name={fcuiName} toggleMenu={toggleMenu} showMenu={showMenu} />
 
-        <section className={`${updateAvail == 'available' ? 'visible' : 'hidden'}`}>
+        <p>The current time is {currentTime}.</p>
+
+        <p>List of updates {updaterList}</p>
+
+        <section className={`${updateAvail === 'available' ? 'visible' : 'hidden'}`}>
         <h2>Update available</h2>
         <Button color='green' text='download & install' postpone={hideUpdate} abort />
         <SVGseparator a={60} b={20} c={70} d={40} width={8} />
@@ -138,13 +160,13 @@ function App() {
         <h2>Preferences</h2>
         </section>
 
-        <section className={`${updateAvail != 'updated' && updateAvail != 'unknown' ? 'visible' : 'hidden'}`}>
+        <section className={`${updateAvail !== 'updated' && updateAvail !== 'unknown' ? 'visible' : 'hidden'}`}>
           <h3>Update available</h3>
           <Button color='green' text='download & install' />
           <SVGseparator a={60} b={20} c={20} d={60} width={12} />
         </section>
 
-        <section className={`notice ${updateAvail == 'unknown' ? 'visible' : 'hidden'}`}>
+        <section className={`notice ${updateAvail === 'unknown' ? 'visible' : 'hidden'}`}>
           <h3>Update</h3>
           <p>Please connect to the internet to check for updates!</p>
           <Button text='check for updates' />
@@ -167,7 +189,7 @@ function App() {
           <SVGseparator a={50} b={60} c={50} d={10} width={12} />
         </section>
 
-        <section className={`notice ${updateAvail == 'updated' ? 'visible' : 'hidden'}`}>
+        <section className={`notice ${updateAvail === 'updated' ? 'visible' : 'hidden'}`}>
           <h3>Update</h3>
           <p>Your flatcat is up to date.</p>
           <SVGseparator a={60} b={20} c={70} d={40} width={12} />

@@ -3,7 +3,7 @@
 updaterlib used by updater-cl (command line) and updater_api (flask API)
 """
 import argparse
-import os, sys
+import os, sys, re
 import string
 import random
 import requests
@@ -97,12 +97,18 @@ def is_running():
 #     resp = requests.delete('http://www.mywebsite.com/user/delete')
 
 def get_list_remote(call_url=None):
+    """get_list_remote
+
+    Get the list of available updates from remote
+    """
     if call_url is None:
         call_url = base_url
-    logger.info(f'getting = {call_url}')
+    logger.info(f'get_list_remote {call_url}')
     r = requests.get(call_url)
     # TODO: this is the raw html, parse that or get .txt file listing
     list_of_updates = r.text.strip()
+    list_of_updates = re.sub(r'<html>.+</h1><hr><pre>(.*)</pre><hr></body>\r\n</html>', r'\1', list_of_updates, count=0, flags=re.M | re.S)
+    list_of_updates = [re.sub(r'<a href="(.*)">.*', r'\1', _) for _ in list_of_updates.split('\r\n') if len(_) > 0]
     logger.info(f'list_of_updates {list_of_updates}')
     # logger.info(f"new {current_version > args.installed_version}")
     return list_of_updates

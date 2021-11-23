@@ -1,4 +1,4 @@
-import BurgerButton from './BurgerButton'
+// import BurgerButton from './BurgerButton'
 
 const Header = ({ name, toggleMenu, showMenu }) => {
   return (
