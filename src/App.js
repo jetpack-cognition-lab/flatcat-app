@@ -98,10 +98,10 @@ function App() {
 	}
       )
     };
-    fetch('/updater/download', requestOptions).then(res => res.json()).then(data => {
+    fetch('/api/updater/download', requestOptions).then(res => res.json()).then(data => {
       // setCurrentTime(data.time);
       console.log(data.message)
-    });    
+    });
   }
 
   const handleChangeUpdaterList = (event) => {
@@ -112,14 +112,14 @@ function App() {
 
   // current time
   useEffect(() => {
-    fetch('/time').then(res => res.json()).then(data => {
+    fetch('/api/time').then(res => res.json()).then(data => {
       setCurrentTime(data.time);
     });
   }, []);
 
   // get list of updates
   useEffect(() => {
-    fetch('/updater/list').then(res => res.json()).then(data => {
+    fetch('/api/updater/list').then(res => res.json()).then(data => {
       console.log(`data ${data.data.message}`)
       setUpdaterList(data.data.list_of_updates);
     });

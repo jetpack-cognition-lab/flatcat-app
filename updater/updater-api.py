@@ -11,7 +11,7 @@ from flatcat.logging import create_logger
 
 logger = create_logger(sys.argv[0], 'info')
 
-api_url = "http://localhost:5000"
+api_url = "http://localhost:5000/api"
 headers_json = {'Content-Type': 'application/json'}
 
 def main_list(args):

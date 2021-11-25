@@ -93,12 +93,12 @@ def api_response_error(
 #         res.update(json.loads(r.data.decode('utf-8')))
 #     return res
 
-@app.route('/time')
+@app.route('/api/time')
 def get_current_time():
     return {'time': time.time()}
 
 # update list: list available local updates
-@app.route('/updater/list') # methods=['POST']
+@app.route('/api/updater/list') # methods=['POST']
 def api_updater_list() -> Response:
     call_url = 'https://base.jetpack.cl/flatcat/updates/'
     list_of_updates = get_list_remote(call_url)
@@ -110,7 +110,7 @@ def api_updater_list() -> Response:
     )
 
 # update check: check remote url if current.bin is greater than / in local files
-@app.route('/updater/current') # methods=['POST']
+@app.route('/api/updater/current') # methods=['POST']
 def api_updater_current() -> Response:
     # url = request.json.get('url')
     # task_url = "https://jetpack.cl"
@@ -125,7 +125,7 @@ def api_updater_current() -> Response:
     )
 
 # update download: download current.bin from remote url
-@app.route('/updater/download', methods=['POST'])
+@app.route('/api/updater/download', methods=['POST'])
 def api_updater_download() -> Response:
     # url = request.json.get('url')
     # task_url = "https://jetpack.cl"
@@ -140,7 +140,7 @@ def api_updater_download() -> Response:
     return api_response_ok(res)
 
 # update apply / install: apply selected update
-@app.route('/updater/install', methods=['POST'])
+@app.route('/api/updater/install', methods=['POST'])
 def api_updater_install() -> Response:
     current_app.logger.info(f'request = {type(request.json)}')
     current_app.logger.info(f'request = {request.json.keys()}')

@@ -142,8 +142,12 @@ def get_download_url(install_version):
     if install_version == 'current':
         current_file, current_version = get_current_remote()
     else:
-        current_version = install_version
-        current_file = f'flatcat-{current_version}.tar.bz2'
+        if install_version.startswith('flatcat-') and install_version.endswith('.ar'):
+            current_version = install_version.replace(".tar.bz2", "").replace(".ar", "").replace("flatcat-", "")
+            current_file = install_version
+        else:
+            current_version = install_version
+            current_file = f'flatcat-{current_version}.tar.bz2'
     return current_file, current_version
 
 def download_from_url_into_file(url, location):
@@ -159,7 +163,10 @@ def download_from_url_into_file(url, location):
             if chunk:
                 f.write(chunk)
                 f.flush()
-    return location
+    return {
+        'location': location,
+        'total_length': total_length,
+    }
 
 def run_command(command, hot=False):
     if VERBOSE:
@@ -190,12 +197,13 @@ def updater_download(*args, **kwargs):
     logger.info(f'call_url = {call_url}')
     call_location = f'{base_work}/{current_file}'
     logger.info(f'call_location = {call_location}')
-    location = download_from_url_into_file(call_url, call_location)
+    res_download = download_from_url_into_file(call_url, call_location)
     return {
         'current_version': current_version,
         'current_file': current_file,
         'url': call_url,
-        'location': location
+        'total_length': res_download['total_length'],
+        'location': res_download['location'],
     }
 
 def updater_install(*args, **kwargs):
