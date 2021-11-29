@@ -9,7 +9,7 @@ import Inputer from './components/Inputer'
 
 import ReactSlider from "react-slider";
 
-
+import moment from 'moment';
 
 
 
@@ -27,6 +27,7 @@ function App() {
   // const [trainingWheels, setTrainingWheels] = useState(true)
 
   const [currentTime, setCurrentTime] = useState(0);
+  const [currentVersion, setCurrentVersion] = useState(0);
   const [updaterList, setUpdaterList] = useState([]);
   const [updaterListSelected, setUpdaterListSelected] = useState('current');
 
@@ -110,10 +111,43 @@ function App() {
     console.log(`handleChangeUpdaterList post ${updaterListSelected}`)
   }
 
-  // current time
+  const handleSubmitInstall = (event) => {
+    console.log(`handleSubmitInstall ${event}`)
+    console.log(`handleSubmitInstall ${updaterListSelected}`)
+    const requestOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(
+    	{
+    	  // title: 'React POST Request Example',
+	  run_hot: true,
+    	  install_backup: false,
+    	  install_version: updaterListSelected
+    	}
+      )
+    };
+    fetch('/api/updater/install', requestOptions).then(res => res.json()).then(data => {
+      // setCurrentTime(data.time);
+      console.log(data.data.message)
+    });
+  }
+  
+  // get current time
   useEffect(() => {
     fetch('/api/time').then(res => res.json()).then(data => {
-      setCurrentTime(data.time);
+      console.log(`data.time ${data.time}`)
+      console.log(`moment(data.time) ${moment.unix(data.time)}`)
+      setCurrentTime(moment.unix(data.time).format('YYYY-MM-DD HH-mm-ss'));
+      // setCurrentTime(data.time);
+    });
+  }, []);
+
+  // get current version
+  useEffect(() => {
+    fetch('/api/updater/version').then(res => res.json()).then(data => {
+      console.log(JSON.stringify(data, null, 4));
+      console.log(`data.data.version ${data.data.version}`)
+      setCurrentVersion(data.data.version);
     });
   }, []);
 
@@ -131,25 +165,39 @@ function App() {
 
   return (
     <div className="App">
+      
       <div id="fc_wrap" className={`${backendOptions[0].value ? 'helping' : ''} ${showMenu ? 'withMenu' : ''} ${backendOptions[1].value ? 'darked' : ''} ${showMenu ? 'withMenu' : ''}`}>
 
-        <Header name={fcuiName} toggleMenu={toggleMenu} showMenu={showMenu} />
+      <Header name={fcuiName} toggleMenu={toggleMenu} showMenu={showMenu} />
 
-        <p>The current time is {currentTime}.</p>
+      <section>
+      <p>flatcat time is {currentTime}.</p>
 
-    <div>
+      <p>flatcat app version is {currentVersion}.</p>
+      
+      <SVGseparator a={60} b={20} c={70} d={40} width={8} />
+      </section>
+      
+      <section>
+      <div>
       <p>Available updates</p>
       <select onChange={handleChangeUpdaterList}>
-      {updaterList.sort((a, b) => (a < b) ? 1 : -1).map(team => <option key={team} value={team}>{team}</option>)}
+      {
+	updaterList.sort((a, b) => (a < b) ? 1 : -1).map(
+	  team => <option key={team} value={team.replace(/flatcat-(.*).ar/, '$1')}>{team}</option>)
+      }
       </select>
-      <button onClick={handleSubmitUpdaterList}>Get Selected Value</button>
+      <p><button onClick={handleSubmitUpdaterList}>download selected update</button></p>
+      <p><button onClick={handleSubmitInstall}>install selected update</button></p>
       </div>
+      <SVGseparator a={60} b={20} c={70} d={40} width={8} />
+      </section>
       
-        <section className={`${updateAvail === 'available' ? 'visible' : 'hidden'}`}>
-        <h2>Update available</h2>
-        <Button color='green' text='download & install' postpone={hideUpdate} abort />
-        <SVGseparator a={60} b={20} c={70} d={40} width={8} />
-        </section>
+      <section className={`${updateAvail === 'available' ? 'visible' : 'hidden'}`}>
+      <h2>Update available</h2>
+      <Button color='green' text='download & install' onClick={handleSubmitInstall} postpone={hideUpdate} abort />
+      <SVGseparator a={60} b={20} c={70} d={40} width={8} />
+      </section>
 
         <section className="fc_onoff">
         <h2>Option group</h2>

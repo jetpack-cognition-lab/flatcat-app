@@ -53,7 +53,9 @@ from flatcat.common import (
     ns2kw,
     updater_parser,
     updater_download,
-    updater_install
+    updater_install,
+    update_version_tag,
+    get_version_tag,
 )
 
 from flatcat.logging import create_logger
@@ -123,6 +125,9 @@ def main_package(args):
     # create full archive with data + control a la debian
     timestamp = create_timestamp()
     kwargs = ns2kw(args)
+
+    # update version tag from timestamp
+    update_version_tag(os.getcwd(), timestamp)
     
     # tar command transforming the path with raspberry prefix, taking inputs from a file
     # package data
@@ -178,8 +183,9 @@ def main_upload(args):
 if __name__ == '__main__':
     parser = updater_parser()
     args = parser.parse_args()
-    args.installed_version = '20211001'
-    # 20211202
+    # TODO: get local versioning sorted
+    # args.installed_version = '20211001'
+    args.installed_version = get_version_tag(os.getcwd())
     logger.info(f'__main__ args = {args}')
 
     # check directories / initialize

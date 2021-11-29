@@ -85,6 +85,24 @@ def create_directories():
 def create_timestamp():
     return datetime.now().strftime('%Y%m%d-%H%M%S')
 
+def update_version_tag(working_dir, version_string):
+    version_file_path = f'{working_dir}/flatcat-app/version.txt'
+    bytes_written = 0
+    with open(version_file_path, 'w') as f:
+        bytes_written = f.write(version_string)
+    return bytes_written
+
+def get_version_tag(working_dir):
+    version_file_path = f'{working_dir}/flatcat-app/version.txt'
+    logger.info(f'get_version_tag {version_file_path}')
+    try:
+        with open(version_file_path, 'r') as f:
+            version_string = f.read().strip()
+    except Exception as e:
+        version_string = '0'
+        
+    return version_string
+
 def is_running():
     """flatcat app is running
     """
@@ -147,7 +165,7 @@ def get_download_url(install_version):
             current_file = install_version
         else:
             current_version = install_version
-            current_file = f'flatcat-{current_version}.tar.bz2'
+            current_file = f'flatcat-{current_version}.ar'
     return current_file, current_version
 
 def download_from_url_into_file(url, location):
@@ -212,13 +230,14 @@ def updater_install(*args, **kwargs):
     Install the package install_version into the filesystem
     """
     commands = []
-    # application stop
+    timestamp = create_timestamp()
+
+    # stop flatcat_ux0 application
     # tmux kill-session -t flatcat
     cmd_line = ['tmux', 'kill-session', '-t', 'flatcat']
     cmd_status, cmd_output = run_command(cmd_line, kwargs['run_hot'])
     commands.append({'cmd_line': cmd_line, 'cmd_status': cmd_status, 'cmd_output': cmd_output})
 
-    timestamp = create_timestamp()
     # application backup
     if kwargs['install_backup']:
         # tar jcvf flatcat-20211020.tar.bz2 jetpack/
@@ -278,7 +297,13 @@ def updater_install(*args, **kwargs):
     # '--backup', base_local_old]
     cmd_status, cmd_output = run_command(cmd_line, kwargs['run_hot'])
     commands.append({'cmd_line': cmd_line, 'cmd_status': cmd_status, 'cmd_output': cmd_output})
-    
+
+    # # stop gunicorn api server
+    # # TODO fix self-kill
+    # cmd_line = ['pkill', 'gunicorn']
+    # cmd_status, cmd_output = run_command(cmd_line, kwargs['run_hot'])
+    # commands.append({'cmd_line': cmd_line, 'cmd_status': cmd_status, 'cmd_output': cmd_output})
+
     # application restart
     # /home/pi/jetpack/bootscripts/starttmux.sh
     # /home/pi/jetpack/setup/boot/start-tmux.sh

@@ -13,15 +13,17 @@ from flask import (
 # print(sys.path)
 
 from config import (
+    base_local,
     base_url,
     base_work,
 )
 
 from flatcat.common import (
+    download_from_url_into_file,
     get_current_remote,
     get_download_url,
     get_list_remote,
-    download_from_url_into_file,
+    get_version_tag,
     updater_download,
     updater_install,
 )
@@ -96,6 +98,14 @@ def api_response_error(
 @app.route('/api/time')
 def get_current_time():
     return {'time': time.time()}
+
+@app.route('/api/updater/version')
+def api_updater_version() -> Response:
+    return api_response_ok(
+        {'message': 'version',
+         'version': get_version_tag(base_local)
+        }
+    )
 
 # update list: list available local updates
 @app.route('/api/updater/list') # methods=['POST']
