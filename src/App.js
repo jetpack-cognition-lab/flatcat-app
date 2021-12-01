@@ -31,6 +31,15 @@ function App() {
   const [updaterList, setUpdaterList] = useState([]);
   const [updaterListSelected, setUpdaterListSelected] = useState('current');
 
+  const [confFlatcat, setConfFlatcat] = useState({});
+
+  const [confWifiApState, setConfWifiApState] = useState(true);
+  const [confWifiWlanSsid, setConfWifiWlanSsid] = useState('None');
+
+  // const [elements, setElements] = useState(null);
+  // setElements(formJSON[0])
+  // const {fields,page_label} = elements??{};
+
   const [fcuiOnOffs, setFcuiOnOffs] = useState([
     {
       id: 1,
@@ -159,6 +168,13 @@ function App() {
     });
   }, []);
 
+  // get configuration dictionary
+  useEffect(() => {
+    fetch('/api/configuration').then(res => res.json()).then(data => {
+      console.log(`configuration ${data.data}`)
+      setConfFlatcat(data.data);
+    });
+  }, []);
 
 
   // RETURN
@@ -190,6 +206,25 @@ function App() {
       <p><button onClick={handleSubmitUpdaterList}>download selected update</button></p>
       <p><button onClick={handleSubmitInstall}>install selected update</button></p>
       </div>
+      <SVGseparator a={60} b={20} c={70} d={40} width={8} />
+      </section>
+
+
+      <section>
+      <p>Configure Wifi</p>
+
+      <p>Access point: {confWifiApState ? ('blub') : ('bla') }</p>
+
+      <p>WLAN: {confWifiWlanSsid}</p>
+      <label>SSID
+      <input type="text" value={confWifiWlanSsid} onChange={setConfWifiWlanSsid} />
+      </label>
+
+      {
+	// Object.entries(confFlatcat).map(([key, val]) => <div>{key} : {val} </div>)
+      }
+
+      <div><pre>{JSON.stringify(confFlatcat, null, 2) }</pre></div>
       <SVGseparator a={60} b={20} c={70} d={40} width={8} />
       </section>
       

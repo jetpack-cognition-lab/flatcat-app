@@ -8,6 +8,7 @@ import string
 import random
 import requests
 import logging
+import json
 
 from datetime import datetime
 from clint.textui import progress
@@ -23,7 +24,9 @@ from config import (
     base_hostname,
     base_local,
     base_url,
-    base_work
+    base_work,
+    config_wpa_path,
+    config_flatcat_path,
 )
 
 from flatcat.logging import create_logger
@@ -65,6 +68,9 @@ def updater_parser():
     subparser_upload = subparsers.add_parser('upload', help='upload an update help')
     subparser_upload.add_argument("-f", "--filename", dest='filename', help="Which filename to upload [flatcat-20211117-171041.tar.bz2]", default = 'flatcat-20211117-171041.tar.bz2')
     subparser_upload.add_argument("-r", "--run-hot", dest='run_hot', action='store_true', default=False, help="Really run commands [False]")
+
+    subparser_configure_wpa = subparsers.add_parser('configure_wpa', help='configure_wpa help')
+    subparser_configure_wpa.add_argument("-r", "--run-hot", dest='run_hot', action='store_true', default=False, help="Really run commands [False]")
 
     return parser
     
@@ -314,3 +320,58 @@ def updater_install(*args, **kwargs):
     return {
         'commands': commands
     }
+
+def configuration_get_wifi(*args, **kwargs):
+    """configuration_get_wifi
+
+    Get the Wifi configurations from
+    /etc/wpa_supplicant/wpa_supplicant.conf and return JSON dictionary.
+    """
+    wpa_conf_text = ''
+    # get wpa_supplicant path from config
+    # open wpa_supplicant
+    with open(config_wpa_path, 'r') as f:
+        wpa_conf_text = f.read()
+    print(f'wpa_conf_text {wpa_conf_text}')
+
+    with open(config_flatcat_path, 'r') as f:
+        config_flatcat = json.load(f)
+        print(f'config_flatcat = {json.dumps(config_flatcat, indent=4)}')
+
+def configuration_get_all(*args, **kwargs):
+    """configuration_get_all
+
+    Get the entire configuration dict from config_flatcat.json
+    """
+    config_flatcat = {}
+    # logger.info(f'configuration_get_all {os.getcwd()}')
+    with open(config_flatcat_path, 'r') as f:
+        config_flatcat = json.load(f)
+        # print(f'config_flatcat = {json.dumps(config_flatcat, indent=4)}')
+    return config_flatcat
+
+def configuration_set(*args, **kwargs):
+    """configuration_set
+
+    Set a configuration option and write back to file
+    """
+    config_flatcat = {}
+    logger.info(f'configuration_set')
+    with open(config_flatcat_path, 'r') as f:
+        config_flatcat = json.load(f)
+        # print(f'config_flatcat = {json.dumps(config_flatcat, indent=4)}')
+    # kwargs[key] = wifi/0/ssid
+    # kwargs[value] = mywifi
+    for k in kwargs['address'].split('/'):
+        _ = config_flatcat[k]
+    _ = kwargs['value']
+    configuration_write(config_flatcat)
+
+def configuration_write(*args, **kwargs):
+    """configuration_set
+
+    Set a configuration option and write back to file
+    """
+    logger.info(f'configuration_write')
+    with open(config_flatcat_path, 'w') as f:
+        json.dump(args[0], f)

@@ -56,6 +56,7 @@ from flatcat.common import (
     updater_install,
     update_version_tag,
     get_version_tag,
+    configuration_get_wifi,
 )
 
 from flatcat.logging import create_logger
@@ -179,7 +180,16 @@ def main_upload(args):
 
     update_current_command = ['ssh', 'base.jetpack.cl', f'echo {update_filename} >/home/www/jetpack_base/flatcat/updates/current.txt']
     run_command(update_current_command, kwargs['run_hot'])
-    
+
+def main_configure_wpa(args):
+    """configure_wpa a packaged update
+
+    - configure_wpa the package file
+    - update current.txt
+    """
+    kwargs = ns2kw(args)
+    configuration_get_wifi(**kwargs)
+
 if __name__ == '__main__':
     parser = updater_parser()
     args = parser.parse_args()
@@ -201,6 +211,8 @@ if __name__ == '__main__':
         _main = main_package
     elif args.mode == 'upload':
         _main = main_upload
+    elif args.mode == 'configure_wpa':
+        _main = main_configure_wpa
     else:
         logger.info('Unknown mode {0}, exiting'.format(args.mode))
         sys.exit(1)

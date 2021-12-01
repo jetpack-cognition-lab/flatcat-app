@@ -1,0 +1,24 @@
+{
+    "wifi": {
+        "networks": [
+            {
+                "ssid": "WLAN-1234",
+                "psk": "pass1234",
+                "scan_ssid": 1,
+                "id_str": "AP1"
+            },
+            {
+                "ssid": "WLAN-5678",
+                "psk": "pass5678",
+                "scan_ssid": 1,
+                "id_str": "AP2"
+            },
+            {
+                "ssid": "flatcat",
+                "psk": "password",
+                "scan_ssid": 1,
+                "id_str": "AP3"
+            }
+        ]
+    }
+}

@@ -26,6 +26,7 @@ from flatcat.common import (
     get_version_tag,
     updater_download,
     updater_install,
+    configuration_get_all,
 )
 
 app = Flask(__name__)
@@ -163,5 +164,9 @@ def api_updater_install() -> Response:
     
     return api_response_ok(res)
 
-
 # settings: send OSC: toggle, use GET / POST
+# update apply / install: apply selected update
+@app.route('/api/configuration', methods=['GET'])
+def api_configuration() -> Response:
+    res = configuration_get_all()
+    return api_response_ok(res)
