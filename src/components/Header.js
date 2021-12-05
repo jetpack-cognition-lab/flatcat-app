@@ -16,7 +16,9 @@ const Header = ({ name, toggleMenu, showMenu }) => {
       <polygon points="0,100 28,30 70,100 100,100" />
     </svg>
 </div>
+{/*
     <button className={`fc_btn_option ${showMenu ? 'hidden' : ''}`} onClick={toggleMenu}>&#9776;</button>
+    */}
     </header>
   )
 }

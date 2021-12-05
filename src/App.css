@@ -28,10 +28,11 @@ button {
 .inputer_group {
   display: flex;
 }
-input[type=text] {
+input[type="text"],
+input[type="password"] {
   flex-grow: 1;
   font-size: 22px;
-  border: none;
+  /* border: none; */
   padding: 4px 8px;
   border-radius: 3px;
 }
@@ -39,7 +40,8 @@ input[type=text] {
 h2,
 h3,
 .fc_btn_group,
-.inputer_group {
+.inputer_group,
+label {
   margin-left: 18px;
   margin-right: 18px;
 }
@@ -142,6 +144,13 @@ section.fc_onoff::after {
 .fc_btn.green {
   background: #10c710;
 }
+.fc_btn.inactive {
+  background: transparent;
+  color: black;
+  border: 4px dashed #ededed;
+  border-radius: 12px;
+  text-align: left;
+}
 
 
 .fc_btn_abort {
@@ -153,6 +162,24 @@ section.fc_onoff::after {
   /*! align-items: center; */
   margin-left: 12px;
 }
+
+
+/* Forms */
+
+/* In Webseite enthaltenes Stil-Dokument #2 | http://localhost:3000/ */
+
+label {
+  margin-bottom: 18px;
+  display: block;
+}
+
+label input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #ededed;
+}
+
 
 
 /* Button OnOff */
