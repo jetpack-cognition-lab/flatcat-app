@@ -57,6 +57,7 @@ from flatcat.common import (
     update_version_tag,
     get_version_tag,
     configuration_get_wifi,
+    flatcat_live,
 )
 
 from flatcat.logging import create_logger
@@ -190,6 +191,16 @@ def main_configure_wpa(args):
     kwargs = ns2kw(args)
     configuration_get_wifi(**kwargs)
 
+def main_flatcat_live(args):
+    """flatcat_live a packaged update
+
+    - flatcat_live the package file
+    - update current.txt
+    """
+    kwargs = ns2kw(args)
+    ret = flatcat_live(**kwargs)
+    return ret
+
 if __name__ == '__main__':
     parser = updater_parser()
     args = parser.parse_args()
@@ -213,6 +224,8 @@ if __name__ == '__main__':
         _main = main_upload
     elif args.mode == 'configure_wpa':
         _main = main_configure_wpa
+    elif args.mode == 'flatcat_live':
+        _main = main_flatcat_live
     else:
         logger.info('Unknown mode {0}, exiting'.format(args.mode))
         sys.exit(1)

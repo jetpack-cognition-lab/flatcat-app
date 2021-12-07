@@ -38,6 +38,8 @@ input[type=text] {
 
 h2,
 h3,
+p,
+select,
 .fc_btn_group,
 .inputer_group {
   margin-left: 18px;

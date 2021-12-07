@@ -7,8 +7,8 @@ from flask import (
     json,
     request,
     Response,
+    Blueprint,
 )
-
 # sys.path.insert(0, '/home/src/QK/jetpack/flatcat-app')
 # print(sys.path)
 
@@ -27,9 +27,13 @@ from flatcat.common import (
     updater_download,
     updater_install,
     configuration_get_all,
+    configuration_set,
+    configuration_wifi_write,
+    configuration_wifi_connected_iwgetid,
 )
 
-app = Flask(__name__)
+# app = Flask(__name__)
+api = Blueprint('api', __name__)
 
 def api_response_ok(data: Union[dict, list], status: int = 200) -> Response:
     rv = {'status': 'ok', 'data': data}
@@ -96,11 +100,11 @@ def api_response_error(
 #         res.update(json.loads(r.data.decode('utf-8')))
 #     return res
 
-@app.route('/api/time')
+@api.route('/api/time')
 def get_current_time():
     return {'time': time.time()}
 
-@app.route('/api/updater/version')
+@api.route('/api/updater/version')
 def api_updater_version() -> Response:
     return api_response_ok(
         {'message': 'version',
@@ -109,7 +113,7 @@ def api_updater_version() -> Response:
     )
 
 # update list: list available local updates
-@app.route('/api/updater/list') # methods=['POST']
+@api.route('/api/updater/list') # methods=['POST']
 def api_updater_list() -> Response:
     call_url = 'https://base.jetpack.cl/flatcat/updates/'
     list_of_updates = get_list_remote(call_url)
@@ -121,7 +125,7 @@ def api_updater_list() -> Response:
     )
 
 # update check: check remote url if current.bin is greater than / in local files
-@app.route('/api/updater/current') # methods=['POST']
+@api.route('/api/updater/current') # methods=['POST']
 def api_updater_current() -> Response:
     # url = request.json.get('url')
     # task_url = "https://jetpack.cl"
@@ -136,7 +140,7 @@ def api_updater_current() -> Response:
     )
 
 # update download: download current.bin from remote url
-@app.route('/api/updater/download', methods=['POST'])
+@api.route('/api/updater/download', methods=['POST'])
 def api_updater_download() -> Response:
     # url = request.json.get('url')
     # task_url = "https://jetpack.cl"
@@ -151,7 +155,7 @@ def api_updater_download() -> Response:
     return api_response_ok(res)
 
 # update apply / install: apply selected update
-@app.route('/api/updater/install', methods=['POST'])
+@api.route('/api/updater/install', methods=['POST'])
 def api_updater_install() -> Response:
     current_app.logger.info(f'request = {type(request.json)}')
     current_app.logger.info(f'request = {request.json.keys()}')
@@ -166,7 +170,37 @@ def api_updater_install() -> Response:
 
 # settings: send OSC: toggle, use GET / POST
 # update apply / install: apply selected update
-@app.route('/api/configuration', methods=['GET'])
+@api.route('/api/configuration', methods=['GET'])
 def api_configuration() -> Response:
     res = configuration_get_all()
+    return api_response_ok(res)
+
+@api.route('/api/configuration/wifi/ssid', methods=['GET'])
+def api_configuration_wifi_ssid() -> Response:
+    res = {'wifi': configuration_get_all()['wifi']['networks'][0]['ssid']}
+    return api_response_ok(res)
+
+@api.route('/api/configuration/wifi/psk', methods=['GET'])
+def api_configuration_wifi_psk() -> Response:
+    res = {'psk': configuration_get_all()['wifi']['networks'][0]['psk']}
+    return api_response_ok(res)
+
+@api.route('/api/configuration/wifi', methods=['GET', 'POST'])
+def api_configuration_wifi() -> Response:
+    if request.method == 'POST':
+        current_app.logger.info(f'request = {request.json}')
+        configuration_set(address='wifi/networks/0', value=request.json)
+        configuration_wifi_write(configuration_wifi=request.json)
+        return api_response_ok({
+            'message': 'wifi/networks/0 updated'
+        })
+    elif request.method == 'GET':
+        res = {'wifi': configuration_get_all()['wifi']['networks'][0]}
+        current_app.logger.info(f'configuration_wifi response = {res}')
+        return api_response_ok(res)
+
+@api.route('/api/configuration/wifi/connected', methods=['GET'])
+def api_configuration_wifi_connected() -> Response:
+    res_iwgetid = configuration_wifi_connected_iwgetid()
+    res = {'connected': res_iwgetid}
     return api_response_ok(res)

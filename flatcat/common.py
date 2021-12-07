@@ -9,6 +9,8 @@ import random
 import requests
 import logging
 import json
+import pprint
+import tempfile
 
 from datetime import datetime
 from clint.textui import progress
@@ -71,6 +73,9 @@ def updater_parser():
 
     subparser_configure_wpa = subparsers.add_parser('configure_wpa', help='configure_wpa help')
     subparser_configure_wpa.add_argument("-r", "--run-hot", dest='run_hot', action='store_true', default=False, help="Really run commands [False]")
+
+    subparser_flatcat_live = subparsers.add_parser('flatcat_live', help='flatcat_live help')
+    subparser_flatcat_live.add_argument("-r", "--run-hot", dest='run_hot', action='store_true', default=False, help="Really run commands [False]")
 
     return parser
     
@@ -332,11 +337,11 @@ def configuration_get_wifi(*args, **kwargs):
     # open wpa_supplicant
     with open(config_wpa_path, 'r') as f:
         wpa_conf_text = f.read()
-    print(f'wpa_conf_text {wpa_conf_text}')
+    logger.info(f'wpa_conf_text {wpa_conf_text}')
 
     with open(config_flatcat_path, 'r') as f:
         config_flatcat = json.load(f)
-        print(f'config_flatcat = {json.dumps(config_flatcat, indent=4)}')
+        logger.info(f'config_flatcat = {json.dumps(config_flatcat, indent=4)}')
 
 def configuration_get_all(*args, **kwargs):
     """configuration_get_all
@@ -359,12 +364,22 @@ def configuration_set(*args, **kwargs):
     logger.info(f'configuration_set')
     with open(config_flatcat_path, 'r') as f:
         config_flatcat = json.load(f)
-        # print(f'config_flatcat = {json.dumps(config_flatcat, indent=4)}')
+        logger.info(f'config_flatcat = {json.dumps(config_flatcat, indent=4)}')
     # kwargs[key] = wifi/0/ssid
     # kwargs[value] = mywifi
-    for k in kwargs['address'].split('/'):
-        _ = config_flatcat[k]
-    _ = kwargs['value']
+    address_items = kwargs['address'].split('/')
+    _ = config_flatcat
+    for k in address_items[:-1]:
+        if re.match("^\d*$", k):
+            k = int(k)
+        _ = _[k]
+
+    k = address_items[-1]
+    if re.match("^\d*$", k):
+        k = int(k)
+    _[k] = kwargs['value']
+
+    logger.info(f'config_flatcat post update {config_flatcat}')
     configuration_write(config_flatcat)
 
 def configuration_write(*args, **kwargs):
@@ -374,4 +389,111 @@ def configuration_write(*args, **kwargs):
     """
     logger.info(f'configuration_write')
     with open(config_flatcat_path, 'w') as f:
-        json.dump(args[0], f)
+        json.dump(args[0], f, indent=4)
+
+def configuration_wifi_write(*args, **kwargs):
+    """configuration_wifi_write
+
+    Write the configuration from `config_flatcat` into system file
+    /etc/wpa_supplicant/wpa_supplicant.conf and return JSON dictionary.
+    """
+    # TODO if live
+    if flatcat_live():
+        run_hot = True
+    else:
+        run_hot = False
+
+    # get wpa_supplicant path from config
+    # open wpa_supplicant
+    # with open(config_wpa_path, 'w') as f:
+    with tempfile.NamedTemporaryFile(mode='w') as f:
+        conf = """ctrl_interface=DIR=/var/run/wpa_supplicant GROUP=netdev
+update_config=1
+country=DE
+"""
+
+        """network={
+    ssid="WLAN1-T93J53"
+    psk="D8D9he9TE5e2Fy1e"
+    scan_ssid=1
+    id_str="AP1"
+}
+network={
+    ssid="0tterwechsel::2GHz4"
+    psk="Tagtraeumer, verdraengen die Kaelte dieser Stadt"
+    scan_ssid=1
+    id_str="AP2"
+}
+network={
+    ssid="flatcat"
+    psk="password"
+    scan_ssid=1
+    id_str="AP3"
+}
+        """
+
+        conf += "network={\n"
+        # conf += str(kwargs['configuration_wifi'])
+        for (k, v) in kwargs['configuration_wifi'].items():
+            if k not in ['ssid', 'psk', 'scan_ssid', 'id_str']: continue
+            if k == 'scan_ssid':
+                conf += f'    {k}={v}\n'
+            else:
+                conf += f'    {k}="{v}"\n'
+        conf += "}"
+        f.write(conf)
+        f.flush()
+        logger.info(f'wpa_conf_text {conf}')
+        logger.info(f'wpa_conf_file {f.name}')
+        cmd_line = ['sudo', 'cp', f.name, config_wpa_path]
+        run_command(cmd_line, hot=run_hot)
+
+    # TODO reload wifi config on system
+    # https://raspberrypi.stackexchange.com/questions/73749/how-to-connect-to-wifi-without-reboot
+    """
+    sudo systemctl daemon-reload
+    sudo systemctl restart dhcpcd
+
+    # or
+
+    sudo systemctl restart wpa_supplicant@wlan0.service
+    sudo systemctl daemon-reload
+    """
+    # cmd_line = ['sudo', 'systemctl', 'restart', 'wpa_supplicant@wlan0.service']
+    # run_command(cmd_line, hot=run_hot)
+    # # cmd_line = ['sudo', 'systemctl', 'restart', 'dhcpcd']
+    # cmd_line = ['sudo', 'systemctl', 'daemon-reload']
+    # run_command(cmd_line, hot=run_hot)
+    cmd_line = ['sudo', 'wpa_cli', '-i', 'wlan0', 'reconfigure']
+    run_command(cmd_line, hot=run_hot)
+
+def flatcat_live(*args, **kwargs):
+    """flatcat_live
+
+    Test if we are on a live system or on a development staging system
+    """
+    os_release_path = '/etc/os-release'
+    if not os.path.exists(os_release_path):
+        return False
+    with open(os_release_path, 'r') as f:
+        os_release_dict = dict([[__.replace('"', '') for __ in _.strip().split('=')] for _ in f.readlines()])
+
+    logger.info(f'os_release_dict\n{pprint.pformat(os_release_dict)}')
+    if os_release_dict['ID'] == 'raspbian':
+        return True
+    else:
+        return False
+
+def configuration_wifi_connected_iwgetid(*args, **kwargs):
+    cmd_line = ['iwgetid', 'wlan0']
+    res = run_command(cmd_line, hot=True)
+    if not res[0]:
+        cmd_line = ['iwgetid']
+        res = run_command(cmd_line, hot=True)
+    res = res[1].strip()
+    res_iface = res.split(' ')[0]
+    res_essid = res.split(':')[-1].replace("\"", "")
+    return {
+        'iface': res_iface,
+        'essid': res_essid,
+    }

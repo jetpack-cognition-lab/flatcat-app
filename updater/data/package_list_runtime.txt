@@ -17,6 +17,7 @@ flatcat-app/flatcat/common.py
 flatcat-app/flatcat/logging.py
 flatcat-app/api/api.py
 flatcat-app/config.py.dist
+flatcat-app/config_flatcat.json.dist
 flatcat-app/requirements.txt
 flatcat-app/version.txt
 flatcat-app/build/

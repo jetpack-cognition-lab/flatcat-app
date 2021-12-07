@@ -6,12 +6,16 @@ import OnOff from './components/OnOff'
 import SVGseparator from './components/SVGseparator'
 // import BurgerButton from './components/BurgerButton'
 import Inputer from './components/Inputer'
+import InputerWifi from './components/InputerWifi'
 
 import ReactSlider from "react-slider";
 
 import moment from 'moment';
 
+// import io from "socket.io-client";
 
+// let endPoint = "http://localhost:3000";
+// let socket = io.connect(`${endPoint}`);
 
 function App() {
 
@@ -34,7 +38,45 @@ function App() {
   const [confFlatcat, setConfFlatcat] = useState({});
 
   const [confWifiApState, setConfWifiApState] = useState(true);
-  const [confWifiWlanSsid, setConfWifiWlanSsid] = useState('None');
+
+  // const [confWifiSsid, setConfWifiSsid] = useState('');
+  // const [confWifiPsk, setConfWifiPsk] = useState('');
+  const [confWifi, setConfWifi] = useState({
+    ssid: 'myssid',
+    psk: 'mypsk',
+  });
+  const [confWifiConnected, setConfWifiConnected] = useState('')
+
+  const confWifiHandleChange = (event) => {
+    const {name, value} = event.target;
+    setConfWifi(prevConfWifi => ({
+      ...prevConfWifi,
+      [name]: value
+    }));
+  }
+
+  const confWifiHandleSubmit = (event) => {
+    event.preventDefault();
+    const {ssid, psk} = confWifi;
+    setConfWifi((prevConfWifi) => ({
+      ...prevConfWifi,
+      status: `Submitted ssid: ${ssid}, psk: ${psk}`
+    }));
+
+    // update on api
+    const requestOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(
+	confWifi
+      )
+    };
+    fetch('/api/configuration/wifi', requestOptions).then(res => res.json()).then(data => {
+      // setCurrentTime(data.time);
+      console.log(data.message)
+    });
+  }
+
 
   // const [elements, setElements] = useState(null);
   // setElements(formJSON[0])
@@ -171,13 +213,33 @@ function App() {
   // get configuration dictionary
   useEffect(() => {
     fetch('/api/configuration').then(res => res.json()).then(data => {
-      console.log(`configuration ${data.data}`)
+      console.log(`configuration ${data.data}`);
       setConfFlatcat(data.data);
     });
   }, []);
 
+  // get configuration wifi dictionary
+  useEffect(() => {
+    fetch('/api/configuration/wifi').then(res => res.json()).then(data => {
+      console.log(`configuration wifi ${data.data}`);
+      setConfWifi(data.data.wifi);
+    });
+  }, []);
+
+  // get configuration wifi connected
+  useEffect(() => {
+    fetch('/api/configuration/wifi/connected').then(res => res.json()).then(data => {
+      console.log(`configuration wifi connected ${data.data.connected.essid}`);
+      setConfWifiConnected(data.data.connected.essid);
+    });
+  }, []);
 
   // RETURN
+  // const {wifissid, wifipsk, wifistatus} = confWifi;
+
+  // dump a JSON preformatted pretty printed
+  // <div><pre>{JSON.stringify(confFlatcat, null, 2) }</pre></div>
+  // <SVGseparator a={60} b={20} c={70} d={40} width={8} />
 
   return (
     <div className="App">
@@ -187,16 +249,16 @@ function App() {
       <Header name={fcuiName} toggleMenu={toggleMenu} showMenu={showMenu} />
 
       <section>
-      <p>flatcat time is {currentTime}.</p>
-
-      <p>flatcat app version is {currentVersion}.</p>
+      <h2>info</h2>
+      <p>flatcat time is {currentTime}, app version is {currentVersion}.</p>
       
       <SVGseparator a={60} b={20} c={70} d={40} width={8} />
       </section>
       
       <section>
       <div>
-      <p>Available updates</p>
+      <h2>Available updates</h2>
+
       <select onChange={handleChangeUpdaterList}>
       {
 	updaterList.sort((a, b) => (a < b) ? 1 : -1).map(
@@ -205,27 +267,47 @@ function App() {
       </select>
       <p><button onClick={handleSubmitUpdaterList}>download selected update</button></p>
       <p><button onClick={handleSubmitInstall}>install selected update</button></p>
+
       </div>
       <SVGseparator a={60} b={20} c={70} d={40} width={8} />
       </section>
 
 
       <section>
-      <p>Configure Wifi</p>
+      <h2>Configure Wifi</h2>
 
-      <p>Access point: {confWifiApState ? ('blub') : ('bla') }</p>
-
-      <p>WLAN: {confWifiWlanSsid}</p>
-      <label>SSID
-      <input type="text" value={confWifiWlanSsid} onChange={setConfWifiWlanSsid} />
-      </label>
+      <p>Access point: {confWifiApState ? ('On') : ('Off') }</p>
 
       {
-	// Object.entries(confFlatcat).map(([key, val]) => <div>{key} : {val} </div>)
+	confWifiConnected ?
+	  <p>Connected Wifi: {confWifiConnected}</p>
+	  : null
       }
 
-      <div><pre>{JSON.stringify(confFlatcat, null, 2) }</pre></div>
-      <SVGseparator a={60} b={20} c={70} d={40} width={8} />
+      <div>
+      <form onSubmit={confWifiHandleSubmit}>
+
+      <p>Wifi SSID: <input type="text" onChange={confWifiHandleChange} name="ssid" value={confWifi.ssid} /></p>
+
+      <p>Wifi PSK: <input type="text" onChange={confWifiHandleChange} name="psk" value={confWifi.psk} /></p>
+
+      <p><input type="submit" value="submit" /></p>
+      </form>
+      {confWifi.status && <p>{confWifi.status}</p>}
+    </div>
+
+      <div><pre>{JSON.stringify(confWifi, null, 2) }</pre></div>
+
+
+      {
+	confFlatcat.wifi ? 
+	  confFlatcat.wifi.networks.map(
+	    (network) =>
+	      <InputerWifi ssid={network.ssid} psk={network.psk} scan_ssid={network.scan_ssid} id_str={network.id_str} />
+	  )
+	  : null
+      }
+
       </section>
       
       <section className={`${updateAvail === 'available' ? 'visible' : 'hidden'}`}>
