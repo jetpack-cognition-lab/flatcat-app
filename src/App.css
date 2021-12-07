@@ -1,14 +1,16 @@
 
-#root {
-  /* background: white;
-  filter: invert(1);
-  height: 100vh; */
+.App {
+  display: flex;
+  justify-content: center;
+  background: #b9b9b9;
 }
 
 #fc_wrap {
-  width: 414px;
+  width: 100vw;
   height: auto;
+  max-width: 550px;
   position: relative;
+  background: white;
 }
 #fc_wrap.withMenu {
   height: 100vh;
@@ -32,7 +34,7 @@ input[type="text"],
 input[type="password"] {
   flex-grow: 1;
   font-size: 22px;
-  /* border: none; */
+  border: 1px solid #ededed;
   padding: 4px 8px;
   border-radius: 3px;
 }
@@ -41,11 +43,21 @@ h2,
 h3,
 .fc_btn_group,
 .inputer_group,
-label {
+label,
+p,
+select,
+ul {
   margin-left: 18px;
   margin-right: 18px;
 }
 
+ul {
+  list-style: none;
+  padding: 0;
+}
+ul > li {
+  display: inline-block;
+}
 section {
   /* padding: 12px 0 32px 0; */
   max-height: 900px;
@@ -77,7 +89,7 @@ section.fc_onoff::after {
 
 .fc_header {
   background: #ededed;
-  background: #ededed url(./img/fc_logo.png) 14px 28px / auto 53% no-repeat;
+  background: #ededed url(./img/fc_logo.png) 16px 54px / auto 40% no-repeat;
   /* height: 60px; */
   display: grid;
   grid-template: 80px 42px / 1fr;
@@ -150,6 +162,9 @@ section.fc_onoff::after {
   border: 4px dashed #ededed;
   border-radius: 12px;
   text-align: left;
+}
+.theMenu .fc_btn.inactive {
+  border-color: #b9b9b9;
 }
 
 
@@ -243,6 +258,33 @@ label input {
 }
 
 
+/* HELP MESSAGEs */
+
+.help_message,
+.help_message_section {
+  display: none;
+}
+.helping .help_message,
+.helping .help_message_section {
+  display: block;
+}
+
+.help_message::before,
+.help_message_section p::before,
+.explaination p::before {
+  content: "?";
+  display: inline-block;
+  position: relative;
+  width: 11px;
+  height: 11px;
+  border: 1px solid;
+  border-radius: 50%;
+  font-size: 9px;
+  text-align: center;
+  top: -2px;
+  margin: 0px 4px 0 2px;
+}
+
 /* BURGER MENU */
 
 .fc_btn_option {
@@ -252,7 +294,7 @@ label input {
   justify-self: flex-end;
   align-self: flex-end;
   margin: 0 12px;
-  font-size: 42px;
+  font-size: 36px;
   background: transparent;
   border-style: none;
   cursor: pointer;
@@ -267,7 +309,7 @@ label input {
 #svg1 {
   grid-row: 1;
   grid-column: 1;
-  height: 30px;
+  height: 52px;
 }
 
 .fc_slider {
@@ -350,7 +392,8 @@ label input {
 /* THE MENU */
 
 .theMenu {
-  width: 414px;
+  width: 100vw;
+  max-width: 550px;
   position: fixed;
   top: -110vh;
   height: calc(100vh - 90px);
@@ -359,9 +402,10 @@ label input {
   overflow: scroll;
   display: flex;
   flex-direction: column;
+  padding-top: 90px;
 }
 .theMenu.visible {
-  top: 110px;
+  top: 0;
 }
 /* .theMenu::before {
   display: block;
@@ -393,7 +437,7 @@ label input {
 }
 .fc_btn_option.closer {
   position: absolute;
-  top: 52px;
+  top: 72px;
   right: 0;
   font-size: 38px;
 }
@@ -415,6 +459,27 @@ section.notice p {
 }
 
 
+/* FOOTER */
+
+.fc_footer {
+  margin-top: 42px;
+}
+
+.fc_footer ul {
+  padding: 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.fc_footer ul li a {
+  color: black;
+  font-size: 12px;
+  padding: 0 8px;
+}
+
+.fc_footer ul li:last-of-type a {
+  padding: 0 0 0 8px;
+}
 
 
 /* SLIDER */
@@ -527,8 +592,13 @@ input {
   color: #08cc14;
   border-radius: 8px;
 }
+.darked .fc_btn.inactive {
+  border-style: dashed;
+  color: #ebebeb;
+}
 
-.darked input[type="text"] {
+.darked input[type="text"],
+.darked input[type="password"] {
   background: #858585;
   color: #ebebeb;
 }
