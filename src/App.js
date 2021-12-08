@@ -6,8 +6,10 @@ import Button from './components/Button'
 import Message from './components/Message'
 import HelpMessage from './components/HelpMessage'
 import InteractButton from './components/InteractButton'
+import TachoScale from './components/TachoScale'
 import WifiForm from './components/WifiForm'
 import OnOff from './components/OnOff'
+import DataOutputList from './components/DataOutputList'
 import SVGseparator from './components/SVGseparator'
 // import BurgerButton from './components/BurgerButton'
 import Inputer from './components/Inputer'
@@ -99,6 +101,40 @@ function App() {
     }
   ])
 
+  // data output
+  const [externDataState, setExternDataState] = useState([
+    {
+      id: 1,
+      name: 'data 1',
+      value: 200,
+      scale: ' Pfennige',
+      help: 'Lorem ipsum nemo laboriosam maxime.'
+    },
+    {
+      id: 2,
+      name: 'data 2',
+      value: 5,
+      scale: 'V',
+      help: 'Lorem ipsum dolor sit amet, voluptatum aliquam Placeat.'
+    }
+  ])
+
+  // data output TACHO
+  const [tachoState, setTachoState] = useState([
+    {
+      id: 1,
+      name: 'enjoyment',
+      value: 60,
+      from: 0,
+      to: 100,
+      scale: '%',
+      help: 'Lorem ipsum . . .'
+    }
+  ])
+
+
+
+
   console.log(`flatcat-app/App.js ${fcuiName}`)
 
 
@@ -149,6 +185,13 @@ function App() {
     let newArr = [...fcuiOnOffs]
     newArr[index].value = !fcuiOnOffs[index].value
     setFcuiOnOffs(newArr)
+  }
+
+  // writetacho data
+  const setTachoData = (index, value) => {
+    let newArr = [...tachoState]
+    newArr[index].value = value + tachoState[index].value
+    setTachoState(newArr)
   }
 
   //
@@ -329,13 +372,41 @@ function App() {
     <SVGseparator a={60} b={20} c={70} d={40} width={8} />
     </section>
 
+    <section>
+    <h2>Data Outputs</h2>
+    <DataOutputList dataArr={externDataState} />
+    <SVGseparator a={60} b={20} c={70} d={40} width={8} />
+    </section>
+
+    <section>
+    <h2>Data Output Tacho</h2>
+    <div className='fc_output_group'>
+    <DataOutputList dataArr={tachoState} />
+    <TachoScale
+      dataValue={tachoState[0].value}
+      limitLow={tachoState[0].from}
+      limitHigh={tachoState[0].to}
+      scaleClockFace={tachoState[0].scale}
+    />
+    </div>
+    <p>
+    <button style={{margin: "2px"}} onClick={() => setTachoData(0,-50)}>demo -50</button>
+    <button style={{margin: "2px"}} onClick={() => setTachoData(0,-10)}>demo -10</button>
+    <button style={{margin: "2px"}} onClick={() => setTachoData(0,-1)}>demo -1</button>
+    <button style={{margin: "2px"}} onClick={() => setTachoData(0,1)}>demo +1</button>
+    <button style={{margin: "2px"}} onClick={() => setTachoData(0,10)}>demo +10</button>
+    <button style={{margin: "2px"}} onClick={() => setTachoData(0,50)}>demo +50</button>
+    </p>
+    <SVGseparator a={60} b={20} c={70} d={40} width={12} />
+    </section>
+
     <section className="fc_onoff">
     <h2>Option group</h2>
     {fcuiOnOffs.map((onOffOption, index) => (
       <OnOff
-        key={onOffOption.id}
-        onOffOption={onOffOption}
-        onClick={toggleOptionOnOffs(index)}
+      key={onOffOption.id}
+      onOffOption={onOffOption}
+      onClick={toggleOptionOnOffs(index)}
       />
     ))}
     <SVGseparator a={60} b={20} c={70} d={40} width={8} />
@@ -355,7 +426,9 @@ function App() {
     <SVGseparator a={20} b={60} c={20} d={20} width={8} />
     </section>
 
+
     {/* PREFERENCES */}
+
     <div className={`theMenu ${showMenu && "visible"}`}>
 
     <svg id="themenu_top" width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
@@ -393,7 +466,7 @@ function App() {
       buttonsInteractive={buttonsInteractive}
     />
     <p className='help_message'>{buttonsInteractive[1].help}</p>
-    <SVGseparator a={60} b={20} c={70} d={40} width={12} />
+    <SVGseparator a={2} b={80} c={80} d={30} width={12} />
     </section>
 
     <section>
