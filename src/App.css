@@ -1,14 +1,16 @@
 
-#root {
-  /* background: white;
-  filter: invert(1);
-  height: 100vh; */
+.App {
+  display: flex;
+  justify-content: center;
+  background: #b9b9b9;
 }
 
 #fc_wrap {
-  width: 414px;
+  width: 100vw;
   height: auto;
+  max-width: 550px;
   position: relative;
+  background: white;
 }
 #fc_wrap.withMenu {
   height: 100vh;
@@ -28,10 +30,11 @@ button {
 .inputer_group {
   display: flex;
 }
-input[type=text] {
+input[type="text"],
+input[type="password"] {
   flex-grow: 1;
   font-size: 22px;
-  border: none;
+  border: 1px solid #ededed;
   padding: 4px 8px;
   border-radius: 3px;
 }
@@ -41,11 +44,22 @@ h3,
 p,
 select,
 .fc_btn_group,
-.inputer_group {
+.inputer_group,
+label,
+p,
+select,
+ul {
   margin-left: 18px;
   margin-right: 18px;
 }
 
+ul {
+  list-style: none;
+  padding: 0;
+}
+ul > li {
+  display: inline-block;
+}
 section {
   /* padding: 12px 0 32px 0; */
   max-height: 900px;
@@ -77,7 +91,7 @@ section.fc_onoff::after {
 
 .fc_header {
   background: #ededed;
-  background: #ededed url(./img/fc_logo.png) 14px 28px / auto 53% no-repeat;
+  background: #ededed url(./img/fc_logo.png) 16px 54px / auto 40% no-repeat;
   /* height: 60px; */
   display: grid;
   grid-template: 80px 42px / 1fr;
@@ -92,10 +106,8 @@ section.fc_onoff::after {
   display: flex;
   justify-content: flex-end;
   align-items: center;
-  margin: 0;
+  margin: 22px 18px 0 0;
   padding: 0;
-  margin-right: 18px;
-  margin-top: 7px;
 }
 #fc_triangle {
   grid-row: 2;
@@ -144,6 +156,16 @@ section.fc_onoff::after {
 .fc_btn.green {
   background: #10c710;
 }
+.fc_btn.inactive {
+  background: transparent;
+  color: black;
+  border: 4px dashed #ededed;
+  border-radius: 12px;
+  text-align: left;
+}
+.theMenu .fc_btn.inactive {
+  border-color: #b9b9b9;
+}
 
 
 .fc_btn_abort {
@@ -155,6 +177,24 @@ section.fc_onoff::after {
   /*! align-items: center; */
   margin-left: 12px;
 }
+
+
+/* Forms */
+
+/* In Webseite enthaltenes Stil-Dokument #2 | http://localhost:3000/ */
+
+label {
+  margin-bottom: 18px;
+  display: block;
+}
+
+label input {
+  display: block;
+  width: 100%;
+  box-sizing: border-box;
+  border: 1px solid #ededed;
+}
+
 
 
 /* Button OnOff */
@@ -218,10 +258,37 @@ section.fc_onoff::after {
 }
 
 
+/* HELP MESSAGEs */
+
+.help_message,
+.help_message_section {
+  display: none;
+}
+.helping .help_message,
+.helping .help_message_section {
+  display: block;
+}
+
+.help_message::before,
+.help_message_section p::before,
+.explaination p::before {
+  content: "?";
+  display: inline-block;
+  position: relative;
+  width: 11px;
+  height: 11px;
+  border: 1px solid;
+  border-radius: 50%;
+  font-size: 9px;
+  text-align: center;
+  top: -2px;
+  margin: 0px 4px 0 2px;
+}
+
 /* BURGER MENU */
 
 .fc_btn_option {
-  color: black;
+  color: #858585;
   grid-row: 2;
   grid-column: 1;
   justify-self: flex-end;
@@ -242,7 +309,7 @@ section.fc_onoff::after {
 #svg1 {
   grid-row: 1;
   grid-column: 1;
-  height: 30px;
+  height: 52px;
 }
 
 .fc_slider {
@@ -325,7 +392,8 @@ section.fc_onoff::after {
 /* THE MENU */
 
 .theMenu {
-  width: 414px;
+  width: 100vw;
+  max-width: 550px;
   position: fixed;
   top: -110vh;
   height: calc(100vh - 90px);
@@ -334,9 +402,10 @@ section.fc_onoff::after {
   overflow: scroll;
   display: flex;
   flex-direction: column;
+  padding-top: 90px;
 }
 .theMenu.visible {
-  top: 110px;
+  top: 0;
 }
 /* .theMenu::before {
   display: block;
@@ -368,9 +437,10 @@ section.fc_onoff::after {
 }
 .fc_btn_option.closer {
   position: absolute;
-  top: 52px;
+  top: 72px;
   right: 0;
   font-size: 38px;
+  color: #000;
 }
 #themenu_top {
   height: 30px;
@@ -390,6 +460,255 @@ section.notice p {
 }
 
 
+/* FOOTER */
+
+.fc_footer {
+  margin-top: 42px;
+}
+
+.fc_footer ul {
+  padding: 0;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.fc_footer ul li a {
+  color: black;
+  font-size: 12px;
+  padding: 0 8px;
+}
+
+.fc_footer ul li:last-of-type a {
+  padding: 0 0 0 8px;
+}
+
+
+/* DATA OUTPUT */
+
+
+ul.data_output_list li {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  justify-items: center;
+  padding: 8px 0;
+}
+ul.data_output_list li span {
+  border-bottom: 2px solid #ededed;
+  font-weight: bold;
+  display: block;
+}
+
+/* ul.data_output_list li span {
+  display: inline-block;
+} */
+
+ul.data_output_list li span:nth-of-type(1) {
+  /* width: 30%; */
+}
+
+ul.data_output_list li span:nth-of-type(2) {
+  /* width: 50%; */
+  justify-self: center;
+}
+ul.data_output_list p {
+  grid-column: span 2;
+  margin: 18px 0;
+  justify-self: flex-start;
+}
+
+
+/* TACHO  */
+
+.fc_output_group {
+  display: grid;
+  grid-template-columns: 2fr 3fr;
+  justify-items: center;
+}
+
+/* .data_output_list */
+
+.tacho_wrap {
+  grid-column: 2;
+  width: 270px;
+  height: 121px;
+  /* border: 2px solid grey; */
+  position: relative;
+  overflow: hidden;
+}
+
+.the_clipper {
+  /* border: 1px solid pink; */
+  width: 100%;
+  height: 100%;
+  box-sizing: border-box;
+  clip-path: polygon(-3% 0%, 50% 0%, 150% -226%, 72% 147%, 26% 136%);
+}
+
+.tacho_border_circ {
+  position: absolute;
+  border: 2px solid #b9b9b9;
+  border-radius: 50%;
+}
+
+.tacho_border_circ.top {
+  width: 600px;
+  height: 600px;
+  left: calc(50% - 302px);
+  top: 0;
+  background: white;
+}
+
+.tacho_border_circ.bottom {
+  width: 400px;
+  height: 400px;
+  left: calc(50% - 202px);
+  top: 100px;
+  background: white;
+  z-index: 1000;
+}
+
+.tacho_border_line {
+  position: absolute;
+  width: 2px;
+  height: 100px;
+  left: calc(50% - 1px);
+  top: 1px;
+  background: #b9b9b9;
+  transform-origin: 0px 300px;
+}
+
+.tacho_border_line.left {
+  transform: rotate(-25.3deg);
+}
+
+.tacho_border_line.right {
+  transform: rotate(25.3deg);
+}
+
+.tacho_needle {
+  position: absolute;
+  width: 1.4px;
+  height: 68px;
+  left: calc(50% - 0.7px);
+  top: 30px;
+  background: black;
+  transform-origin: 0px 270px;
+  z-index: 100;
+  /* transition: transform 0.6s ease; */
+  /* transition: transform 0.6s cubic-bezier(0.85, 0, 0.15, 1); */
+  transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  transform: rotate(-10deg);
+}
+
+.tacho_needle.too_much {
+  animation: amLimit 0.2s ease-in-out .6s infinite;
+}
+.tacho_needle.too_little {
+  animation: ganzUnten 1.6s ease-in-out .6s infinite;
+}
+@keyframes amLimit {
+  0% {   transform: rotate(21deg);
+ }
+  50% {   transform: rotate(22deg);
+ }
+  100% {   transform: rotate(21deg);
+ }
+}
+@keyframes ganzUnten {
+  0% {   transform: rotate(-21deg);
+ }
+  50% {   transform: rotate(-22deg);
+ }
+  100% {   transform: rotate(-21deg);
+ }
+}
+
+.tacho_scale_wrap {
+  width: 100%;
+  height: 100%;
+}
+
+.tacho_scale_dot {
+  position: absolute;
+  top: 20px;
+  width: 2px;
+  height: 12px;
+  left: calc(50% - 1px);
+  background: black;
+  transform-origin: 0px 280px;
+}
+
+.tacho_scale_dot::after {
+  content: unset;
+  font-size: 12px;
+  position: absolute;
+  bottom: -17px;
+  left: -10px;
+  /* border: 1px solid; */
+  width: 20px;
+  text-align: center;
+}
+
+.tacho_scale_dot.small {
+  height: 5px;
+}
+
+.tacho_scale_dot:nth-of-type(1) {
+  transform: rotate(-20deg);
+}
+.tacho_scale_dot:nth-of-type(2) {
+  transform: rotate(-16deg);
+}
+.tacho_scale_dot:nth-of-type(3) {
+  transform: rotate(-12deg);
+}
+.tacho_scale_dot:nth-of-type(4) {
+  transform: rotate(-8deg);
+}
+.tacho_scale_dot:nth-of-type(5) {
+  transform: rotate(-4deg);
+}
+.tacho_scale_dot:nth-of-type(6) {
+  transform: rotate(0deg);
+}
+.tacho_scale_dot:nth-of-type(7) {
+  transform: rotate(4deg);
+}
+.tacho_scale_dot:nth-of-type(8) {
+  transform: rotate(8deg);
+}
+.tacho_scale_dot:nth-of-type(9) {
+  transform: rotate(12deg);
+}
+.tacho_scale_dot:nth-of-type(10) {
+  transform: rotate(16deg);
+}
+.tacho_scale_dot:nth-of-type(11) {
+  transform: rotate(20deg);
+}
+
+.tacho_scale_dot:nth-of-type(1)::after {
+  content: "0";
+}
+.tacho_scale_dot:nth-of-type(6)::after {
+  content: "50";
+}
+.tacho_scale_dot:nth-of-type(11)::after {
+  content: "100";
+}
+
+.clockFace {
+  position: absolute;
+  bottom: 22px;
+  left: calc(50% - 50px);
+  width: 100px;
+  height: 30px;
+  /* border: 1px solid; */
+  text-align: center;
+  font-weight: bold;
+  font-size: 20px;
+  /* color: #b9b9b9; */
+}
 
 
 /* SLIDER */
@@ -502,8 +821,13 @@ input {
   color: #08cc14;
   border-radius: 8px;
 }
+.darked .fc_btn.inactive {
+  border-style: dashed;
+  color: #ebebeb;
+}
 
-.darked input[type="text"] {
+.darked input[type="text"],
+.darked input[type="password"] {
   background: #858585;
   color: #ebebeb;
 }

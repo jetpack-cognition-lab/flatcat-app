@@ -198,8 +198,11 @@ def download_from_url_into_file(url, location):
     }
 
 def run_command(command, hot=False):
-    if VERBOSE:
-        logger.info(f'run_command = {" ".join(command)}')
+    if hot:
+        runmode = 'HOT'
+    else:
+        runmode = 'DRY'
+    logger.info(f'run_command {runmode} {" ".join(command)}')
     success = True
     result_ = None
     if hot:
@@ -210,8 +213,6 @@ def run_command(command, hot=False):
         except (CalledProcessError, FileNotFoundError) as e:
             success = False
             logger.error(f'error {e}')
-    else:
-        logger.info(f'dry run')
     # result.stdout.decode('utf-8')
     return success, result_
 
@@ -337,11 +338,11 @@ def configuration_get_wifi(*args, **kwargs):
     # open wpa_supplicant
     with open(config_wpa_path, 'r') as f:
         wpa_conf_text = f.read()
-    logger.info(f'wpa_conf_text {wpa_conf_text}')
+    logger.info(f'configuration_get_wifi wpa_conf_text = {wpa_conf_text}')
 
     with open(config_flatcat_path, 'r') as f:
         config_flatcat = json.load(f)
-        logger.info(f'config_flatcat = {json.dumps(config_flatcat, indent=4)}')
+        logger.info(f'configuration_get_wifi config_flatcat = {json.dumps(config_flatcat, indent=4)}')
 
 def configuration_get_all(*args, **kwargs):
     """configuration_get_all
@@ -443,8 +444,8 @@ network={
         conf += "}"
         f.write(conf)
         f.flush()
-        logger.info(f'wpa_conf_text {conf}')
-        logger.info(f'wpa_conf_file {f.name}')
+        logger.info(f'configuration_wifi_write wpa_conf_text {conf}')
+        logger.info(f'configuration_wifi_write wpa_conf_file {f.name}')
         cmd_line = ['sudo', 'cp', f.name, config_wpa_path]
         run_command(cmd_line, hot=run_hot)
 
@@ -478,7 +479,7 @@ def flatcat_live(*args, **kwargs):
     with open(os_release_path, 'r') as f:
         os_release_dict = dict([[__.replace('"', '') for __ in _.strip().split('=')] for _ in f.readlines()])
 
-    logger.info(f'os_release_dict\n{pprint.pformat(os_release_dict)}')
+    logger.info(f'os_release_dict {os_release_dict}')
     if os_release_dict['ID'] == 'raspbian':
         return True
     else:

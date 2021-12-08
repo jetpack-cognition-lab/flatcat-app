@@ -4,8 +4,15 @@ import moment from 'moment';
 import ReactSlider from "react-slider";
 
 import Header from './components/Header'
+import Footer from './components/Footer'
 import Button from './components/Button'
+import Message from './components/Message'
+import HelpMessage from './components/HelpMessage'
+import InteractButton from './components/InteractButton'
+import TachoScale from './components/TachoScale'
+import WifiForm from './components/WifiForm'
 import OnOff from './components/OnOff'
+import DataOutputList from './components/DataOutputList'
 import SVGseparator from './components/SVGseparator'
 // import BurgerButton from './components/BurgerButton'
 import Inputer from './components/Inputer'
@@ -19,34 +26,63 @@ import Dashboard from './components/socketDashboard.js';
 
 function App() {
 
-  // STATES
 
+  // ### STATES ###
+
+  // nickname
   const [fcuiName, setFcuiName] = useState('my flatcat')
 
-  const [showMenu, setShowMenu] = useState(false);
+  // preferences
+  const [showMenu, setShowMenu] = useState(true)
 
-  const [updateAvail, setUpdateAvail] = useState('available');
-  // available, unknown, updated
+  // update notification
+  const [updateAvail, setUpdateAvail] = useState('unknown') // available, unknown or updated
+  const [updaterStatus, setUpdaterStatus] = useState('none') // none, checked, downloaded, installed
 
-  // const [trainingWheels, setTrainingWheels] = useState(true)
+  // wifi
+  const [networkName, setNetworkName] = useState('')
+  const [networkSecret, setNetworkSecret] = useState('')
+  const [networkStatus, setNetworkStatus] = useState('none') // none, connecting, failed, connected
 
-  const [currentTime, setCurrentTime] = useState(0);
-  const [currentVersion, setCurrentVersion] = useState(0);
-  const [updaterList, setUpdaterList] = useState([]);
-  const [updaterListSelected, setUpdaterListSelected] = useState('current');
-
+  // flatcat main config
   const [confFlatcat, setConfFlatcat] = useState({});
-
-  const [confWifiApState, setConfWifiApState] = useState(true);
-
-  // const [confWifiSsid, setConfWifiSsid] = useState('');
-  // const [confWifiPsk, setConfWifiPsk] = useState('');
   const [confWifi, setConfWifi] = useState({
     ssid: 'myssid',
     psk: 'mypsk',
   });
+  const [confWifiApState, setConfWifiApState] = useState(true);
   const [confWifiConnected, setConfWifiConnected] = useState('')
+    
+  // buttons
+  const [buttonsInteractive, setButtonsInteractive] = useState([
+    {
+      id: 0,
+      name: 'update',
+      label: 'check for update',
+      show_message: false,
+      color: 'green',
+      message: fcuiName+' is up to date',
+      help: 'Here you can download and install a newer version of the flatcat software. Normally a new version comes with additional features and improved functionality.'
+    },
+    {
+      id: 1,
+      name: 'wifi connect',
+      label: 'connect',
+      show_message: false,
+      color: 'green',
+      message: fcuiName+' is connected to the internet',
+      help: 'In this section you can connect the flatcat to your wifi router. Just enter the name of the router and the required password.'
+    }
 
+  ])
+
+  // versions
+  const [currentTime, setCurrentTime] = useState(0)
+  const [currentVersion, setCurrentVersion] = useState(0)
+  const [updaterList, setUpdaterList] = useState([])
+  const [updaterListSelected, setUpdaterListSelected] = useState('current')
+
+    // wifi configuration
   const confWifiHandleChange = (event) => {
     const {name, value} = event.target;
     setConfWifi(prevConfWifi => ({
@@ -77,11 +113,7 @@ function App() {
     });
   }
 
-
-  // const [elements, setElements] = useState(null);
-  // setElements(formJSON[0])
-  // const {fields,page_label} = elements??{};
-
+  // on/off options
   const [fcuiOnOffs, setFcuiOnOffs] = useState([
     {
       id: 1,
@@ -95,15 +127,15 @@ function App() {
       value: true,
       help: 'Lorem ipsum dolor sit amet, voluptatum aliquam Placeat.'
     }
-
   ])
 
+  // preferences (on/off options)
   const [backendOptions, setBackendOptions] = useState([
     {
       id: 1,
       name: 'training wheels',
       value: true,
-      help: 'Shows you descriptions and hints on all options.'
+      help: 'Shows you descriptions and hints on all options, like this one.'
     },
     {
       id: 2,
@@ -111,47 +143,110 @@ function App() {
       value: false,
       help: 'A dark colored layout.'
     }
-
   ])
 
-  console.log(`flatcat-app/App.js ${fcuiName}`)
-  
-  // FUNCTIONS
+  // data output
+  const [externDataState, setExternDataState] = useState([
+    {
+      id: 1,
+      name: 'data 1',
+      value: 200,
+      scale: ' Pfennige',
+      help: 'Lorem ipsum nemo laboriosam maxime.'
+    },
+    {
+      id: 2,
+      name: 'data 2',
+      value: 5,
+      scale: 'V',
+      help: 'Lorem ipsum dolor sit amet, voluptatum aliquam Placeat.'
+    }
+  ])
+
+  // data output TACHO
+  const [tachoState, setTachoState] = useState([
+    {
+      id: 1,
+      name: 'enjoyment',
+      value: 60,
+      from: 0,
+      to: 100,
+      scale: '%',
+      help: 'Lorem ipsum . . .'
+    }
+  ])
+
+  // ### FUNCTIONS ###
 
   const hideUpdate = () => {
     setUpdateAvail('postpone')
   }
 
   const toggleMenu = () => {
-    setShowMenu(!showMenu);
+    setShowMenu(!showMenu)
   }
 
+  // check if wifi is connected
+  const messageCondWifi = () => {
+      console.log(`messageCondWifi networkStatus {networkStatus}`);
+      if (networkStatus === 'connected') {
+	  return true
+    } else {
+      return false
+    }
+  }
+
+  // interactive button
+  const showMessageButtonsInt = (index, message) => {
+    let newArr = [...buttonsInteractive]
+    newArr[index].message = message
+    newArr[index].show_message = true
+    setButtonsInteractive(newArr)
+  }
+  const setLabelButtonsInt = (index, label) => {
+    let newArr = [...buttonsInteractive]
+    newArr[index].message = ''
+    newArr[index].label = label
+    newArr[index].show_message = false
+    setButtonsInteractive(newArr)
+  }
+
+  // backend options
   const toggleOptionBackend = index => e => {
     let newArr = [...backendOptions]
     newArr[index].value = !backendOptions[index].value
     setBackendOptions(newArr)
   }
 
+  // on/off options
   const toggleOptionOnOffs = index => e => {
     let newArr = [...fcuiOnOffs]
     newArr[index].value = !fcuiOnOffs[index].value
     setFcuiOnOffs(newArr)
   }
 
+  // writetacho data
+  const setTachoData = (index, value) => {
+    let newArr = [...tachoState]
+    newArr[index].value = value + tachoState[index].value
+    setTachoState(newArr)
+  }
+
+  //
   const handleSubmitUpdaterList = (event) => {
     console.log(`handleSubmitUpdaterList pre ${updaterListSelected}`)
     const requestOptions = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(
-	{
-	  title: 'React POST Request Example',
-	  install_version: updaterListSelected
-	}
+        {
+          title: 'React POST Request Example',
+          install_version: updaterListSelected
+        }
       )
     };
     fetch('/api/updater/download', requestOptions).then(res => res.json()).then(data => {
-      // setCurrentTime(data.time);
+      // setCurrentTime(data.time)
       console.log(data.message)
     });
   }
@@ -163,31 +258,76 @@ function App() {
   }
 
   const handleSubmitInstall = (event) => {
+    showMessageButtonsInt(0, 'installing . . .')
     console.log(`handleSubmitInstall ${event}`)
     console.log(`handleSubmitInstall ${updaterListSelected}`)
     const requestOptions = {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify(
-    	{
-    	  // title: 'React POST Request Example',
-	  run_hot: true,
-    	  install_backup: false,
-    	  install_version: updaterListSelected
-    	}
+        {
+          // title: 'React POST Request Example',
+          run_hot: true,
+          install_backup: false,
+          install_version: updaterListSelected
+        }
       )
     };
     fetch('/api/updater/install', requestOptions).then(res => res.json()).then(data => {
       // setCurrentTime(data.time);
       console.log(data.data.message)
     });
+    setUpdaterStatus("installed")
+    showMessageButtonsInt(0, 'installation successful, '+fcuiName+' is up to date')
   }
-  
+
+  // download button clicked
+  const handleDownloadAndInstall = (e) => {
+    if (networkStatus === 'connected') {
+      showMessageButtonsInt(0, 'checking for update . . .')
+      if (updaterStatus === "none") {
+        let newestUpdate = updaterList.sort((a, b) => (a < b) ? 1 : -1)[0]
+        setUpdaterListSelected(newestUpdate)
+        if (newestUpdate === 'current') {
+          showMessageButtonsInt(0, fcuiName+' is up to date')
+        } else {
+          setUpdaterStatus("checked")
+          setLabelButtonsInt(0, "download & install")
+        }
+      } else if (updaterStatus === "checked") {
+        setUpdaterStatus("downloaded")
+        showMessageButtonsInt(0, 'downloading . . .')
+        handleSubmitInstall()
+      }
+    } else {
+      showMessageButtonsInt(0, "no internet connecting")
+      setTimeout(() => {
+       setLabelButtonsInt(0, "check for update")
+      }, 5000);
+    }
+  }
+
+  // wifi submit
+  const handleWifiForm = (e) => {
+    console.log('handleWifiForm')
+    // TODO: wifi connection
+
+    // error handling
+    if (networkName && networkSecret) {
+      showMessageButtonsInt(1, 'trying to connect . . .')
+    } else {
+      showMessageButtonsInt(1, 'please enter a network name and a password!')
+      setTimeout(() => {
+       setLabelButtonsInt(1, "connect")
+      }, 5000)
+    }
+  }
+
   // get current time
   useEffect(() => {
     fetch('/api/time').then(res => res.json()).then(data => {
-      console.log(`data.time ${data.time}`)
-      console.log(`moment(data.time) ${moment.unix(data.time)}`)
+	// console.log(`data.time ${data.time}`)
+      console.log(`api/time - ${moment.unix(data.time)}`)
       setCurrentTime(moment.unix(data.time).format('YYYY-MM-DD HH-mm-ss'));
       // setCurrentTime(data.time);
     });
@@ -229,49 +369,224 @@ function App() {
   // get configuration wifi connected
   useEffect(() => {
     fetch('/api/configuration/wifi/connected').then(res => res.json()).then(data => {
-      console.log(`configuration wifi connected ${data.data.connected.essid}`);
-      setConfWifiConnected(data.data.connected.essid);
+	// console.log(`configuration wifi connected ${data.data.connected.essid}`);
+	setConfWifiConnected(data.data.connected.essid);
+	console.log(`configuration wifi connected ${confWifiConnected}`);
+	if (confWifiConnected !== "") {
+	    setNetworkStatus('connected');
+	    // setMessageCondWifi(true);
+	    console.log(`networkStatus ${networkStatus}`);
+	}
     });
   }, []);
 
-  // RETURN
-  // const {wifissid, wifipsk, wifistatus} = confWifi;
+  console.log(`flatcat-app/App.js ${fcuiName} ${currentTime}`)
+  // ### RETURN ###
 
-  // dump a JSON preformatted pretty printed
-  // <div><pre>{JSON.stringify(confFlatcat, null, 2) }</pre></div>
-  // <SVGseparator a={60} b={20} c={70} d={40} width={8} />
+    ////////////////////////////////////////////////////////////
+    // HELPERS
+    
+    // iterate over part of the configuration dictionary
+    // {
+    // 	confFlatcat.wifi ? 
+    // 	  confFlatcat.wifi.networks.map(
+    // 	    (network) =>
+    // 	      <InputerWifi ssid={network.ssid} psk={network.psk} scan_ssid={network.scan_ssid} id_str={network.id_str} />
+    // 	  )
+    // 	  : null
+    // }
 
+    // debug json content as raw string
+    // <div><pre>{JSON.stringify(confWifi, null, 2) }</pre></div>
+    
   return (
     <div className="App">
-      
-      <div id="fc_wrap" className={`${backendOptions[0].value ? 'helping' : ''} ${showMenu ? 'withMenu' : ''} ${backendOptions[1].value ? 'darked' : ''} ${showMenu ? 'withMenu' : ''}`}>
 
-      <Header name={fcuiName} toggleMenu={toggleMenu} showMenu={showMenu} />
-      
-      <section>
-      <h2>info</h2>
-      <p>flatcat time is {currentTime}, app version is {currentVersion}.</p>
-      
-      <SVGseparator a={60} b={20} c={70} d={40} width={8} />
-      </section>
+    <div
+      id="fc_wrap"
+      className={`${backendOptions[0].value ? 'helping' : ''}
+      ${showMenu ? 'withMenu' : ''}
+      ${backendOptions[1].value ? 'darked' : ''}
+      ${showMenu ? 'withMenu' : ''}`}
+    >
 
-      <section>
-      <div>
-      <h2>Available updates</h2>
+    <Header
+      name={fcuiName}
+      toggleMenu={toggleMenu}
+      showMenu={showMenu}
+    />
 
-      <select onChange={handleChangeUpdaterList}>
-      {
-	updaterList.sort((a, b) => (a < b) ? 1 : -1).map(
-	  team => <option key={team} value={team.replace(/flatcat-(.*).ar/, '$1')}>{team}</option>)
-      }
-      </select>
-      <p><button onClick={handleSubmitUpdaterList}>download selected update</button></p>
-      <p><button onClick={handleSubmitInstall}>install selected update</button></p>
+    <Message
+      theMessage='blub'
+      condition={messageCondWifi}
+    />
+
+    <section>
+    <h2>Version</h2>
+    <p>flatcat time is {currentTime}.</p>
+    <p>flatcat app version is {currentVersion}.</p>
+    <SVGseparator a={60} b={20} c={70} d={40} width={8} />
+    </section>
+
+    <section>
+    <div>
+    <h2>Available Updates</h2>
+    <select onChange={handleChangeUpdaterList}>
+    {
+      updaterList.sort((a, b) => (a < b) ? 1 : -1).map(
+        team => <option key={team} value={team.replace(/flatcat-(.*).ar/, '$1')}>{team}</option>
+      )
+    }
+    </select>
+    <p><button onClick={handleSubmitUpdaterList}>download selected update</button></p>
+    <p><button onClick={handleSubmitInstall}>install selected update</button></p>
+    </div>
+    <SVGseparator a={60} b={20} c={70} d={40} width={8} />
+    </section>
+
+    <section className={`${updateAvail === 'available' ? 'visible' : 'hidden'}`}>
+    <h2>Update available</h2>
+    <Button
+      color='green'
+      text='download & install'
+      onClick={handleSubmitInstall}
+      postpone={hideUpdate}
+      abort
+    />
+    <SVGseparator a={60} b={20} c={70} d={40} width={8} />
+    </section>
+
+    <section>
+    <h2>Data Outputs</h2>
+    <DataOutputList dataArr={externDataState} />
+    <SVGseparator a={60} b={20} c={70} d={40} width={8} />
+    </section>
+
+    <section>
+    <h2>Data Output Tacho</h2>
+    <div className='fc_output_group'>
+    <DataOutputList dataArr={tachoState} />
+    <TachoScale
+      dataValue={tachoState[0].value}
+      limitLow={tachoState[0].from}
+      limitHigh={tachoState[0].to}
+      scaleClockFace={tachoState[0].scale}
+    />
+    </div>
+    <p>
+    <button style={{margin: "2px"}} onClick={() => setTachoData(0,-50)}>demo -50</button>
+    <button style={{margin: "2px"}} onClick={() => setTachoData(0,-10)}>demo -10</button>
+    <button style={{margin: "2px"}} onClick={() => setTachoData(0,-1)}>demo -1</button>
+    <button style={{margin: "2px"}} onClick={() => setTachoData(0,1)}>demo +1</button>
+    <button style={{margin: "2px"}} onClick={() => setTachoData(0,10)}>demo +10</button>
+    <button style={{margin: "2px"}} onClick={() => setTachoData(0,50)}>demo +50</button>
+    </p>
+    <SVGseparator a={60} b={20} c={70} d={40} width={12} />
+    </section>
+
+    <section className="fc_onoff">
+    <h2>Option group</h2>
+    {fcuiOnOffs.map((onOffOption, index) => (
+      <OnOff
+      key={onOffOption.id}
+      onOffOption={onOffOption}
+      onClick={toggleOptionOnOffs(index)}
+      />
+    ))}
+    <SVGseparator a={60} b={20} c={70} d={40} width={8} />
+    </section>
+
+    <section className="fc_slider">
+    <ReactSlider
+    className="vertical-slider"
+    thumbClassName="example-thumb"
+    trackClassName="example-track"
+    orientation="vertical"
+    />
+    <div className="clock_wrap">
+    <div className="clock" id="clc_1">
+    </div>
+    </div>
+    <SVGseparator a={20} b={60} c={20} d={20} width={8} />
+    </section>
+
+
+    {/* PREFERENCES */}
+
+    <div className={`theMenu ${showMenu && "visible"}`}>
+
+    <svg id="themenu_top" width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
+    <polygon points="0,100 33,30 66,100 100,100 " />
+    </svg>
+
+    <section>
+    <h2>Preferences</h2>
+    </section>
+
+    <HelpMessage helpMessage='Welcome to preferences! Here you can establish an internet connecting, change the name of your flatcat, update your software and so much more.' />
+
+    <section>
+    <h3>Update</h3>
+    <InteractButton
+      color={buttonsInteractive[0].color}
+      label={buttonsInteractive[0].label}
+      message={buttonsInteractive[0].message}
+      show_message={buttonsInteractive[0].show_message}
+      onClick={handleDownloadAndInstall}
+    />
+    <p className='help_message'>{buttonsInteractive[0].help}</p>
+    <SVGseparator a={60} b={20} c={70} d={40} width={12} />
+    </section>
+
+    <section>
+    <h3>Wifi</h3>
+    <WifiForm
+      networkName={networkName}
+      setNetworkName={setNetworkName}
+      networkSecret={networkSecret}
+      setNetworkSecret={setNetworkSecret}
+      handleWifiForm={handleWifiForm}
+      fcuiName={fcuiName}
+      buttonsInteractive={buttonsInteractive}
+    />
+    <p className='help_message'>{buttonsInteractive[1].help}</p>
+    <SVGseparator a={2} b={80} c={80} d={30} width={12} />
+    </section>
+
+    <section>
+    <h3>Name</h3>
+    <Inputer
+      setFcuiName={setFcuiName}
+      Value={fcuiName}
+    />
+    <SVGseparator a={20} b={60} c={20} d={20} width={12} />
+    </section>
+
+    <section className="fc_onoff">
+    <h3>Layout</h3>
+    {backendOptions.map((backendOption, index) => (
+      <OnOff
+        key={backendOption.id}
+        onOffOption={backendOption}
+        onClick={toggleOptionBackend(index)}
+      />
+    ))}
+    <SVGseparator a={50} b={60} c={50} d={10} width={12} />
+    </section>
+
+    <section className={`notice ${updateAvail === 'updated' ? 'visible' : 'hidden'}`}>
+    <h3>Update</h3>
+    <p>Your flatcat is up to date.</p>
+    <SVGseparator a={60} b={20} c={70} d={40} width={12} />
+    </section>
+
+    <section>
+    <div style={{height: 250+'px'}}></div>
+    </section>
+
+    <button className="fc_btn_option closer" onClick={toggleMenu}>&times;</button>
 
       </div>
-      <SVGseparator a={60} b={20} c={70} d={40} width={8} />
-      </section>
-
 
       <section>
       <h2>Configure Wifi</h2>
@@ -296,116 +611,17 @@ function App() {
       {confWifi.status && <p>{confWifi.status}</p>}
     </div>
 
-      <div><pre>{JSON.stringify(confWifi, null, 2) }</pre></div>
-
-
-      {
-	confFlatcat.wifi ? 
-	  confFlatcat.wifi.networks.map(
-	    (network) =>
-	      <InputerWifi ssid={network.ssid} psk={network.psk} scan_ssid={network.scan_ssid} id_str={network.id_str} />
-	  )
-	  : null
-      }
-
-    </section>
-
-      <section>
-      	<Dashboard />
       </section>
-      
-      <section className={`${updateAvail === 'available' ? 'visible' : 'hidden'}`}>
-      <h2>Update available</h2>
-      <Button color='green' text='download & install' onClick={handleSubmitInstall} postpone={hideUpdate} abort />
-      <SVGseparator a={60} b={20} c={70} d={40} width={8} />
-      </section>
+	  
+	  <div>
+	  <Dashboard />
+	  </div>
 
-        <section className="fc_onoff">
-        <h2>Option group</h2>
+    <Footer />
 
-          {fcuiOnOffs.map((onOffOption, index) => (
-            <OnOff key={onOffOption.id} onOffOption={onOffOption} onClick={toggleOptionOnOffs(index)} />
-          ))}
+    </div>
 
-
-          <SVGseparator a={60} b={20} c={70} d={40} width={8} />
-        </section>
-
-
-        <section className="fc_slider">
-          <ReactSlider
-            className="vertical-slider"
-            thumbClassName="example-thumb"
-            trackClassName="example-track"
-            orientation="vertical"
-          />
-
-          <div className="clock_wrap">
-            <div className="clock" id="clc_1">
-            </div>
-          </div>
-          <SVGseparator a={20} b={60} c={20} d={20} width={8} />
-        </section>
-
-
-
-
-      <div className={`theMenu ${showMenu ? "visible" : ""}`}>
-
-        <svg id="themenu_top" width="100" height="100" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="none">
-          <polygon points="0,100 33,30 66,100 100,100 " />
-        </svg>
-
-        <section>
-        <h2>Preferences</h2>
-        </section>
-
-        <section className={`${updateAvail !== 'updated' && updateAvail !== 'unknown' ? 'visible' : 'hidden'}`}>
-          <h3>Update available</h3>
-          <Button color='green' text='download & install' />
-          <SVGseparator a={60} b={20} c={20} d={60} width={12} />
-        </section>
-
-        <section className={`notice ${updateAvail === 'unknown' ? 'visible' : 'hidden'}`}>
-          <h3>Update</h3>
-          <p>Please connect to the internet to check for updates!</p>
-          <Button text='check for updates' />
-          <SVGseparator a={60} b={20} c={20} d={60} width={12} />
-        </section>
-
-
-
-        <section>
-          <h3>Name</h3>
-          <Inputer setFcuiName={setFcuiName} Value={fcuiName} />
-          <SVGseparator a={20} b={60} c={20} d={20} width={12} />
-        </section>
-
-        <section className="fc_onoff">
-        <h3>Layout</h3>
-          {backendOptions.map((backendOption, index) => (
-            <OnOff key={backendOption.id} onOffOption={backendOption} onClick={toggleOptionBackend(index)} />
-          ))}
-          <SVGseparator a={50} b={60} c={50} d={10} width={12} />
-        </section>
-
-        <section className={`notice ${updateAvail === 'updated' ? 'visible' : 'hidden'}`}>
-          <h3>Update</h3>
-          <p>Your flatcat is up to date.</p>
-          <SVGseparator a={60} b={20} c={70} d={40} width={12} />
-        </section>
-
-        <section>
-        <div style={{height: 250+'px'}}></div>
-        </section>
-
-        <button className="fc_btn_option closer" onClick={toggleMenu}>&times;</button>
-
-      </div>
-
-  </div>
-
-  </div>
+    </div>
   );
 }
 
