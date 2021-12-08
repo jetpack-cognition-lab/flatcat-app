@@ -1,6 +1,5 @@
-import sys
+import sys, time
 from typing import Dict, Optional, Union
-import time
 from flask import (
     current_app,
     Flask,

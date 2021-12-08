@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from "react"
 import './App.css'
+import moment from 'moment';
+import ReactSlider from "react-slider";
+
 import Header from './components/Header'
 import Button from './components/Button'
 import OnOff from './components/OnOff'
@@ -7,10 +10,7 @@ import SVGseparator from './components/SVGseparator'
 // import BurgerButton from './components/BurgerButton'
 import Inputer from './components/Inputer'
 import InputerWifi from './components/InputerWifi'
-
-import ReactSlider from "react-slider";
-
-import moment from 'moment';
+import Dashboard from './components/socketDashboard.js';
 
 // import io from "socket.io-client";
 
@@ -247,14 +247,14 @@ function App() {
       <div id="fc_wrap" className={`${backendOptions[0].value ? 'helping' : ''} ${showMenu ? 'withMenu' : ''} ${backendOptions[1].value ? 'darked' : ''} ${showMenu ? 'withMenu' : ''}`}>
 
       <Header name={fcuiName} toggleMenu={toggleMenu} showMenu={showMenu} />
-
+      
       <section>
       <h2>info</h2>
       <p>flatcat time is {currentTime}, app version is {currentVersion}.</p>
       
       <SVGseparator a={60} b={20} c={70} d={40} width={8} />
       </section>
-      
+
       <section>
       <div>
       <h2>Available updates</h2>
@@ -308,6 +308,10 @@ function App() {
 	  : null
       }
 
+    </section>
+
+      <section>
+      	<Dashboard />
       </section>
       
       <section className={`${updateAvail === 'available' ? 'visible' : 'hidden'}`}>

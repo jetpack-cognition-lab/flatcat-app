@@ -31,3 +31,4 @@ __pycache__
 # data
 *.bz2
 *.ar
+*.log
