@@ -10,7 +10,7 @@ flatcat via a graphical user interface (GUI).
 
 Using [How To Create a React + Flask Project](https://blog.miguelgrinberg.com/post/how-to-create-a-react--flask-project) as a starting point
 
-All API code is in api/ directory
+All API code is in server/ directory
 
 Start flask backend with `yarn start-api`, will start running on port 5000
 
@@ -33,8 +33,8 @@ If you are running from a fresh git clone, you will need to set up your Python v
 
 ```python
 cd flatcat-app
-python3 -m venv api/venv
-. api/venv/bin/activate
+python3 -m venv venv
+. venv/bin/activate
 pip install -r requirements.txt
 ```
 Also you need to create the backend configuration file with

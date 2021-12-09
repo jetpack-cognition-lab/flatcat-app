@@ -58,6 +58,7 @@ from flatcat.common import (
     get_version_tag,
     configuration_get_wifi,
     flatcat_live,
+    get_current_local,
 )
 
 from flatcat.logging import create_logger
@@ -168,16 +169,22 @@ def main_upload(args):
     - update current.txt
     """
     kwargs = ns2kw(args)
-    
-    update_filename = os.path.basename(kwargs['filename'])
-    update_filename_path = f"flatcat-app/updater/data/{update_filename}"
+
+    update_datadir = 'flatcat-app/updater/data'
+    if kwargs['filename'] is None:
+        update_filename, update_version = get_current_local(update_datadir)
+    else:
+        update_filename = kwargs['filename']
+    update_filename = os.path.basename(update_filename)
+
+    update_filename_path = f"{update_datadir}/{update_filename}"
     upload_command = f"scp {update_filename_path} {base_hostname}:/home/www/jetpack_base/flatcat/updates/".split(' ')
-    logger.info(f'upload_command = {upload_command}')
+    logger.info(f'main_upload: upload_command = {upload_command}')
     uploaded = run_command(upload_command, kwargs['run_hot'])
 
-    if not uploaded:
-        logger.info('main_upload upload failed')
-        return
+    if not uploaded[0]:
+        logger.error('main_upload: upload failed')
+        return False
 
     update_current_command = ['ssh', 'base.jetpack.cl', f'echo {update_filename} >/home/www/jetpack_base/flatcat/updates/current.txt']
     run_command(update_current_command, kwargs['run_hot'])

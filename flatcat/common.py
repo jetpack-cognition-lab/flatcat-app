@@ -12,6 +12,7 @@ import json
 import pprint
 import tempfile
 
+from pathlib import Path
 from datetime import datetime
 from clint.textui import progress
 from subprocess import run, CalledProcessError, PIPE
@@ -68,7 +69,7 @@ def updater_parser():
     subparser_package.add_argument("-s", "--sdk", dest='package_version', help="Install full runtime or full sdk [runtime]", default = 'runtime')
 
     subparser_upload = subparsers.add_parser('upload', help='upload an update help')
-    subparser_upload.add_argument("-f", "--filename", dest='filename', help="Which filename to upload [flatcat-20211117-171041.tar.bz2]", default = 'flatcat-20211117-171041.tar.bz2')
+    subparser_upload.add_argument("-f", "--filename", dest='filename', help="Which filename to upload, if None use most recent [None]", default=None)
     subparser_upload.add_argument("-r", "--run-hot", dest='run_hot', action='store_true', default=False, help="Really run commands [False]")
 
     subparser_configure_wpa = subparsers.add_parser('configure_wpa', help='configure_wpa help')
@@ -152,6 +153,14 @@ def get_current_remote(call_url=None):
     logger.info(f'current_file = {current_file}, current_version = {current_version}')
     # logger.info(f"new {current_version > args.installed_version}")
     return current_file, current_version
+
+def get_current_local(update_datadir):
+    folder_path = Path(update_datadir)
+    list_of_paths = folder_path.glob('*')
+    latest_path = max(list_of_paths, key=lambda p: p.stat().st_ctime)
+    latest_version = os.path.basename(latest_path.replace(".tar.bz2", "").replace(".ar", "").replace("flatcat-", ""))
+    logger.info(f'get_current_local: {latest_path}, {latest_version}')
+    return (latest_path, latest_version)
 
 # def get_current_remote_2():
 #     call_url = base_url + '/current.txt'
@@ -269,7 +278,8 @@ def updater_install(*args, **kwargs):
     # tar jxvf data/flatcat-20211020.tar.bz2
     # filename = f'flatcat-20211020.tar.bz2'
     if kwargs['install_version'] == 'current':
-        _, kwargs['install_version'] = get_current_remote() # "20211020"
+        # _, kwargs['install_version'] = get_current_remote()
+        _, kwargs['install_version'] = get_current_local()
 
     # unpack top-level archive
     filename = f"flatcat-{kwargs['install_version']}.ar"
@@ -486,10 +496,10 @@ def flatcat_live(*args, **kwargs):
         return False
 
 def configuration_wifi_connected_iwgetid(*args, **kwargs):
-    cmd_line = ['iwgetid', 'wlan0']
+    cmd_line = ['/sbin/iwgetid', 'wlan0']
     res = run_command(cmd_line, hot=True)
     if not res[0]:
-        cmd_line = ['iwgetid']
+        cmd_line = ['/sbin/iwgetid']
         res = run_command(cmd_line, hot=True)
     res = res[1].strip()
     res_iface = res.split(' ')[0]

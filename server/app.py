@@ -4,7 +4,7 @@ from flask_cors import CORS
 from flask import (
     Flask)
 
-from api import api
+from .api import api as api_blueprint
 
 from flatcat.ux0 import DataThread
 
@@ -13,7 +13,8 @@ app = Flask(__name__)
 app.config['SECRET_KEY'] = 'mysecret'
 
 # need this
-app.register_blueprint(api.api)
+app.logger.info(f'app.py type(api_blueprint) {type(api_blueprint)}')
+app.register_blueprint(api_blueprint)
 
 # socketIo = SocketIO(app)
 socketio = SocketIO(app, async_mode='threading', cors_allowed_origins='*')
