@@ -8,6 +8,11 @@ To be used in the context of a flask app
 
 import socket, threading, random, time
 
+from config import (
+    ux0_host,
+    ux0_port,
+)
+
 class DataThread(threading.Thread):
     def __init__(self, app = None, socketio = None, thread_stop_event = None):
         self.app = app
@@ -19,8 +24,8 @@ class DataThread(threading.Thread):
         self.is_connected = False
         self.app.logger.info(f'{self.__class__.__name__} init socket')
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-        self.address = 'flatcat3000.local'
-        self.port = 7332
+        self.address = ux0_host
+        self.port = ux0_port
         self.bufsize  = 4096
         self.soc = -1
         self.app.logger.info(f'{self.__class__.__name__} socket connect {self.address}:{self.port}')
@@ -83,7 +88,7 @@ class DataThread(threading.Thread):
                 else:
                     temperature = round(random.random()*10, 3)
 
-                self.app.logger.info(f'{self.__class__.__name__} dataGenerator temperature {temperature}')
+                # self.app.logger.info(f'{self.__class__.__name__} dataGenerator temperature {temperature}')
                 self.socketio.emit('responseMessage', {'temperature': temperature})
 
                 time.sleep(self.delay)

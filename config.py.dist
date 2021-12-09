@@ -6,3 +6,5 @@ base_work = f"{base_home}/work"
 config_wpa_path = "/etc/wpa_supplicant/wpa_supplicant.conf"
 config_hostname_path = "/etc/wpa_supplicant/hostname"
 config_flatcat_path = f"{base_local}/flatcat-app/config_flatcat.json"
+ux0_host = 'localhost'
+ux0_port = 7332

@@ -91,6 +91,23 @@ function App() {
     }));
   }
 
+  // wifi submit
+  const handleWifiForm = (e) => {
+    console.log(`handleWifiForm ${e}`)
+      // TODO: wifi connection
+
+
+    // error handling
+    if (networkName && networkSecret) {
+      showMessageButtonsInt(1, 'trying to connect . . .')
+    } else {
+      showMessageButtonsInt(1, 'please enter a network name and a password!')
+      setTimeout(() => {
+       setLabelButtonsInt(1, "connect")
+      }, 5000)
+    }
+  }
+
   const confWifiHandleSubmit = (event) => {
     event.preventDefault();
     const {ssid, psk} = confWifi;
@@ -109,7 +126,22 @@ function App() {
     };
     fetch('/api/configuration/wifi', requestOptions).then(res => res.json()).then(data => {
       // setCurrentTime(data.time);
-      console.log(data.message)
+	console.log('confWifiHandleSubmit response =', data.data.message)
+    });
+  }
+
+  const confNameHandleSubmit = (event) => {
+      event.preventDefault();
+      
+    // update on api
+    const requestOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+	body: JSON.stringify({'name': fcuiName})
+    };
+    fetch('/api/configuration/name', requestOptions).then(res => res.json()).then(data => {
+      // setCurrentTime(data.time);
+	console.log('confWifiHandleSubmit response =', data.data.message)
     });
   }
 
@@ -307,22 +339,6 @@ function App() {
     }
   }
 
-  // wifi submit
-  const handleWifiForm = (e) => {
-    console.log('handleWifiForm')
-    // TODO: wifi connection
-
-    // error handling
-    if (networkName && networkSecret) {
-      showMessageButtonsInt(1, 'trying to connect . . .')
-    } else {
-      showMessageButtonsInt(1, 'please enter a network name and a password!')
-      setTimeout(() => {
-       setLabelButtonsInt(1, "connect")
-      }, 5000)
-    }
-  }
-
   // get current time
   useEffect(() => {
     fetch('/api/time').then(res => res.json()).then(data => {
@@ -330,6 +346,14 @@ function App() {
       console.log(`api/time - ${moment.unix(data.time)}`)
       setCurrentTime(moment.unix(data.time).format('YYYY-MM-DD HH-mm-ss'));
       // setCurrentTime(data.time);
+    });
+  }, []);
+
+  // get configuration name
+  useEffect(() => {
+    fetch('/api/configuration/name').then(res => res.json()).then(data => {
+      console.log(`configuration ${data.data}`);
+	setFcuiName(data.data.name);
     });
   }, []);
 
@@ -362,7 +386,9 @@ function App() {
   useEffect(() => {
     fetch('/api/configuration/wifi').then(res => res.json()).then(data => {
       console.log(`configuration wifi ${data.data}`);
-      setConfWifi(data.data.wifi);
+	setConfWifi(data.data.wifi);
+	setNetworkName(data.data.wifi.ssid);
+	setNetworkSecret(data.data.wifi.psk);
     });
   }, []);
 
@@ -380,7 +406,7 @@ function App() {
     });
   }, []);
 
-  console.log(`flatcat-app/App.js ${fcuiName} ${currentTime}`)
+    console.log(`flatcat-app/App.js ${fcuiName} ${currentTime}`);
   // ### RETURN ###
 
     ////////////////////////////////////////////////////////////
@@ -398,6 +424,17 @@ function App() {
 
     // debug json content as raw string
     // <div><pre>{JSON.stringify(confWifi, null, 2) }</pre></div>
+
+
+    // <WifiForm
+    //   networkName={networkName}
+    //   setNetworkName={setNetworkName}
+    //   networkSecret={networkSecret}
+    //   setNetworkSecret={setNetworkSecret}
+    //   handleWifiForm={handleWifiForm}
+    //   fcuiName={fcuiName}
+    //   buttonsInteractive={buttonsInteractive}
+    // />
     
   return (
     <div className="App">
@@ -541,11 +578,11 @@ function App() {
     <section>
     <h3>Wifi</h3>
     <WifiForm
-      networkName={networkName}
-      setNetworkName={setNetworkName}
-      networkSecret={networkSecret}
-      setNetworkSecret={setNetworkSecret}
-      handleWifiForm={handleWifiForm}
+      networkName={confWifi.ssid}
+      setNetworkName={confWifiHandleChange}
+      networkSecret={confWifi.psk}
+      setNetworkSecret={confWifiHandleChange}
+      handleWifiForm={confWifiHandleSubmit}
       fcuiName={fcuiName}
       buttonsInteractive={buttonsInteractive}
     />
@@ -558,6 +595,7 @@ function App() {
     <Inputer
       setFcuiName={setFcuiName}
       Value={fcuiName}
+      confNameHandleSubmit={confNameHandleSubmit}
     />
     <SVGseparator a={20} b={60} c={20} d={20} width={12} />
     </section>

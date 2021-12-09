@@ -156,8 +156,7 @@ def api_updater_download() -> Response:
 # update apply / install: apply selected update
 @api.route('/api/updater/install', methods=['POST'])
 def api_updater_install() -> Response:
-    current_app.logger.info(f'request = {type(request.json)}')
-    current_app.logger.info(f'request = {request.json.keys()}')
+    current_app.logger.info(f'api_updater_install request.json.keys = {request.json.keys()}')
     install_version = request.json.get('install_version')
     install_backup = request.json.get('install_backup')
     run_hot = request.json.get('run_hot')
@@ -187,7 +186,7 @@ def api_configuration_wifi_psk() -> Response:
 @api.route('/api/configuration/wifi', methods=['GET', 'POST'])
 def api_configuration_wifi() -> Response:
     if request.method == 'POST':
-        current_app.logger.info(f'request = {request.json}')
+        current_app.logger.info(f'api_configuration_wifi request = {request.json}')
         configuration_set(address='wifi/networks/0', value=request.json)
         configuration_wifi_write(configuration_wifi=request.json)
         return api_response_ok({
@@ -203,3 +202,17 @@ def api_configuration_wifi_connected() -> Response:
     res_iwgetid = configuration_wifi_connected_iwgetid()
     res = {'connected': res_iwgetid}
     return api_response_ok(res)
+
+@api.route('/api/configuration/name', methods=['GET', 'POST'])
+def api_configuration_name() -> Response:
+    current_app.logger.info(f'api_configuration_name request = {request}')
+    if request.method == 'POST':
+        current_app.logger.info(f'api_configuration_name request = {request.json}')
+        configuration_set(address='name', value=request.json['name'])
+        return api_response_ok({
+            'message': 'name updated'
+        })
+    elif request.method == 'GET':
+        res = {'name': configuration_get_all()['name']}
+        current_app.logger.info(f'api_configuration_name response = {res}')
+        return api_response_ok(res)

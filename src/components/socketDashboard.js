@@ -20,7 +20,7 @@ class Dashboard extends React.Component {
         this.socket.on("responseMessage", message => {
             this.setState({'socketData': message.temperature})
 
-            console.log("socketDashboard responseMessage", message)
+            // console.log("socketDashboard responseMessage", message)
         })
             
     }
@@ -29,7 +29,7 @@ class Dashboard extends React.Component {
             this.socket.emit("message", {'data':'Stop Sending', 'status':'Off'})
             this.setState({'socketStatus':"Off"})
 	}
-	else{        
+	else{
             this.socket.emit("message", {'data':'Start Sending', 'status':'On'})
             this.setState({'socketStatus':"On"})
         }
