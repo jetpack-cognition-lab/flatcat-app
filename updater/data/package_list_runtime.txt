@@ -15,6 +15,9 @@ flatcat-app/updater/updater-api.py
 flatcat-app/flatcat/__init__.py
 flatcat-app/flatcat/common.py
 flatcat-app/flatcat/logging.py
+flatcat-app/flatcat/ux0.py
+flatcat-app/api/__init__.py
+flatcat-app/api/app.py
 flatcat-app/api/api.py
 flatcat-app/config.py.dist
 flatcat-app/config_flatcat.json.dist
