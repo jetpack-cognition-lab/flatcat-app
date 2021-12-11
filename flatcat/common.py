@@ -158,6 +158,8 @@ def get_current_local(update_datadir):
     folder_path = Path(update_datadir)
     list_of_paths = folder_path.glob('*')
     latest_path = max(list_of_paths, key=lambda p: p.stat().st_ctime)
+    latest_path = str(latest_path)
+    logger.info(f'get_current_local: latest_path {type(latest_path)}')
     latest_version = os.path.basename(latest_path.replace(".tar.bz2", "").replace(".ar", "").replace("flatcat-", ""))
     logger.info(f'get_current_local: {latest_path}, {latest_version}')
     return (latest_path, latest_version)
@@ -255,7 +257,7 @@ def updater_install(*args, **kwargs):
 
     # stop flatcat_ux0 application
     # tmux kill-session -t flatcat
-    cmd_line = ['tmux', 'kill-session', '-t', 'flatcat']
+    cmd_line = ['tmux', '-S', '/home/pi/tmux-sock', 'kill-session', '-t', 'flatcat']
     cmd_status, cmd_output = run_command(cmd_line, kwargs['run_hot'])
     commands.append({'cmd_line': cmd_line, 'cmd_status': cmd_status, 'cmd_output': cmd_output})
 
@@ -279,7 +281,7 @@ def updater_install(*args, **kwargs):
     # filename = f'flatcat-20211020.tar.bz2'
     if kwargs['install_version'] == 'current':
         # _, kwargs['install_version'] = get_current_remote()
-        _, kwargs['install_version'] = get_current_local()
+        _, kwargs['install_version'] = get_current_local(f'{base_work}')
 
     # unpack top-level archive
     filename = f"flatcat-{kwargs['install_version']}.ar"
@@ -298,6 +300,10 @@ def updater_install(*args, **kwargs):
     cmd_status, cmd_output = run_command(cmd_line, kwargs['run_hot'])
     commands.append({'cmd_line': cmd_line, 'cmd_status': cmd_status, 'cmd_output': cmd_output})
 
+    cmd_line = ['rm', f'{base_work}/{filename}']
+    cmd_status, cmd_output = run_command(cmd_line, kwargs['run_hot'])
+    commands.append({'cmd_line': cmd_line, 'cmd_status': cmd_status, 'cmd_output': cmd_output})
+
     # run pre-install script
     cmd_line = ['python', f'{base_local}/flatcat-app/updater/updater-pre.py']
     cmd_status, cmd_output = run_command(cmd_line, kwargs['run_hot'])
@@ -310,6 +316,10 @@ def updater_install(*args, **kwargs):
     commands.append({'cmd_line': cmd_line, 'cmd_status': cmd_status, 'cmd_output': cmd_output})
 
     cmd_line = ['tar', 'jxvf', f'{base_work}/{filename}', '-C', f'{base_home}']
+    cmd_status, cmd_output = run_command(cmd_line, kwargs['run_hot'])
+    commands.append({'cmd_line': cmd_line, 'cmd_status': cmd_status, 'cmd_output': cmd_output})
+
+    cmd_line = ['rm', f'{base_work}/{filename}']
     cmd_status, cmd_output = run_command(cmd_line, kwargs['run_hot'])
     commands.append({'cmd_line': cmd_line, 'cmd_status': cmd_status, 'cmd_output': cmd_output})
 
@@ -489,7 +499,7 @@ def flatcat_live(*args, **kwargs):
     with open(os_release_path, 'r') as f:
         os_release_dict = dict([[__.replace('"', '') for __ in _.strip().split('=')] for _ in f.readlines()])
 
-    logger.info(f'os_release_dict {os_release_dict}')
+    logger.info(f'flatcat_live: os_release_dict = {os_release_dict}')
     if os_release_dict['ID'] == 'raspbian':
         return True
     else:
@@ -508,3 +518,19 @@ def configuration_wifi_connected_iwgetid(*args, **kwargs):
         'iface': res_iface,
         'essid': res_essid,
     }
+
+# system
+def system_shutdown():
+    if flatcat_live():
+        run_hot = True
+    else:
+        run_hot = False
+
+    cmd_line = ['sudo', 'halt']
+    res = run_command(cmd_line, hot=run_hot)
+    return res
+
+def system_restart():
+    cmd_line = ['ls']
+    res = run_command(cmd_line, hot=True)
+    return res

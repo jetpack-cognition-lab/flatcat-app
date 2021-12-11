@@ -7,6 +7,7 @@ from flask import (
     request,
     Response,
     Blueprint,
+    render_template
 )
 # sys.path.insert(0, '/home/src/QK/jetpack/flatcat-app')
 # print(sys.path)
@@ -29,6 +30,8 @@ from flatcat.common import (
     configuration_set,
     configuration_wifi_write,
     configuration_wifi_connected_iwgetid,
+    system_shutdown,
+    system_restart,
 )
 
 # app = Flask(__name__)
@@ -98,6 +101,10 @@ def api_response_error(
 #     if with_result:
 #         res.update(json.loads(r.data.decode('utf-8')))
 #     return res
+
+@api.route('/')
+def get_root():
+    return render_template('main.html')
 
 @api.route('/api/time')
 def get_current_time():
@@ -216,3 +223,24 @@ def api_configuration_name() -> Response:
         res = {'name': configuration_get_all()['name']}
         current_app.logger.info(f'api_configuration_name response = {res}')
         return api_response_ok(res)
+
+# system
+@api.route('/api/system/shutdown', methods=['POST'])
+def api_system_shutdown() -> Response:
+    res = system_shutdown()
+    return api_response_ok(
+        {
+            'message': 'shutdown',
+            'result': res
+        }
+    )
+
+@api.route('/api/system/restart', methods=['POST'])
+def api_system_restart() -> Response:
+    res = system_restart()
+    return api_response_ok(
+        {
+            'message': 'restart',
+            'result': res
+        }
+    )

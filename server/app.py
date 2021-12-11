@@ -4,11 +4,14 @@ from flask_cors import CORS
 from flask import (
     Flask)
 
-from .api import api as api_blueprint
+from api import api as api_blueprint
 
 from flatcat.ux0 import DataThread
 
-app = Flask(__name__)
+app = Flask(
+    __name__,
+    template_folder='templates'
+)
 
 app.config['SECRET_KEY'] = 'mysecret'
 
@@ -32,6 +35,9 @@ thread_stop_event = threading.Event()
 #     app.logger.info(f'message {msg}')
 #     send(msg, broadcast=True)
 #     return None
+
+def root():
+    return render_template('main.html')
 
 # TODO create async communication thread with flatcat_ux0 and 'send' out the data
 
@@ -93,7 +99,6 @@ def default_error_handler(e):
 if __name__ == '__main__':
 
     # app.register_blueprint(api)
-    
     # app.run()
     # socketIo.run(app)
     socketio.run(app, debug=True, host='0.0.0.0')

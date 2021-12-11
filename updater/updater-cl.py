@@ -65,9 +65,6 @@ from flatcat.logging import create_logger
 
 logger = create_logger(sys.argv[0], 'info')
 
-def get_current_local():
-    pass
-
 def main_uuid(args):
     """main_uuid
     """

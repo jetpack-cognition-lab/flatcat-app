@@ -12,7 +12,7 @@ from config import (
     base_work
 )
 
-from updaterlib import (
+from flatcat.common import (
     run_command
 )
 
@@ -87,25 +87,25 @@ if __name__ == '__main__':
     # else:
     #     conf1 = {}
 
-    ######################################################################
-    # update flatcat.dat from dist file
-    conf1 = flatcat_config_read_to_dict(f'{base_local}/flatcat-ux0/flatcat.dat')
-    print(f"conf1 = \n{pformat(conf1)}")
+    # ######################################################################
+    # # update flatcat.dat from dist file
+    # conf1 = flatcat_config_read_to_dict(f'{base_local}/flatcat-ux0/flatcat.dat')
+    # print(f"conf1 = \n{pformat(conf1)}")
 
-    # read new default config
-    conf2 = flatcat_config_read_to_dict(f'{base_local}/flatcat-ux0/flatcat.dat.dist')
-    print(f"conf2 = \n{pformat(conf2)}")
+    # # read new default config
+    # conf2 = flatcat_config_read_to_dict(f'{base_local}/flatcat-ux0/flatcat.dat.dist')
+    # print(f"conf2 = \n{pformat(conf2)}")
 
-    # create new config
-    conf3 = {}
-    # update with new defaults
-    conf3.update(conf2)
-    #  conserve custom settings
-    conf3.update(conf1)
-    print(f"conf3 = \n{pformat(conf3)}")
+    # # create new config
+    # conf3 = {}
+    # # update with new defaults
+    # conf3.update(conf2)
+    # #  conserve custom settings
+    # conf3.update(conf1)
+    # print(f"conf3 = \n{pformat(conf3)}")
 
-    # write new config to file
-    flatcat_config_dict_to_file(f'{base_local}/flatcat-ux0/flatcat.dat', conf3)
+    # # write new config to file
+    # flatcat_config_dict_to_file(f'{base_local}/flatcat-ux0/flatcat.dat', conf3)
 
     ######################################################################
     # TODO do the same for config.py

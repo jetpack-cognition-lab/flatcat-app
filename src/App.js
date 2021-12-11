@@ -33,7 +33,7 @@ function App() {
   const [fcuiName, setFcuiName] = useState('my flatcat')
 
   // preferences
-  const [showMenu, setShowMenu] = useState(true)
+  const [showMenu, setShowMenu] = useState(false)
 
   // update notification
   const [updateAvail, setUpdateAvail] = useState('unknown') // available, unknown or updated
@@ -132,7 +132,7 @@ function App() {
 
   const confNameHandleSubmit = (event) => {
       event.preventDefault();
-      
+
     // update on api
     const requestOptions = {
       method: 'POST',
@@ -141,10 +141,38 @@ function App() {
     };
     fetch('/api/configuration/name', requestOptions).then(res => res.json()).then(data => {
       // setCurrentTime(data.time);
-	console.log('confWifiHandleSubmit response =', data.data.message)
+	console.log('confNameHandleSubmit response =', data.data.message)
     });
   }
 
+    const sysShutdown = (event) => {
+	event.preventDefault();
+      
+	// update on api
+	const requestOptions = {
+	    method: 'POST',
+	    headers: { 'Content-Type': 'application/json' },
+	    body: JSON.stringify({'sys': 'shutdown'})
+	};
+	fetch('/api/system/shutdown', requestOptions).then(res => res.json()).then(data => {
+	    console.log('sysShutdown response =', data.data.message)
+	});
+    }
+
+    const sysRestart = (event) => {
+	event.preventDefault();
+      
+	// update on api
+	const requestOptions = {
+	    method: 'POST',
+	    headers: { 'Content-Type': 'application/json' },
+	    body: JSON.stringify({'sys': 'restart'})
+	};
+	fetch('/api/system/restart', requestOptions).then(res => res.json()).then(data => {
+	    console.log('sysRestart response =', data.data.message)
+	});
+    }
+    
   // on/off options
   const [fcuiOnOffs, setFcuiOnOffs] = useState([
     {
@@ -220,7 +248,7 @@ function App() {
 
   // check if wifi is connected
   const messageCondWifi = () => {
-      console.log(`messageCondWifi networkStatus {networkStatus}`);
+      console.log(`messageCondWifi networkStatus ${networkStatus}`);
       if (networkStatus === 'connected') {
 	  return true
     } else {
@@ -279,7 +307,7 @@ function App() {
     };
     fetch('/api/updater/download', requestOptions).then(res => res.json()).then(data => {
       // setCurrentTime(data.time)
-      console.log(data.message)
+      console.log(data.data.message)
     });
   }
 
@@ -481,6 +509,60 @@ function App() {
     <SVGseparator a={60} b={20} c={70} d={40} width={8} />
     </section>
 
+      <section>
+      <h2>Configure Wifi</h2>
+
+      <p>Access point: {confWifiApState ? ('On') : ('Off') }</p>
+
+      {
+	confWifiConnected ?
+	  <p>Connected Wifi: {confWifiConnected}</p>
+	  : null
+      }
+
+      <div>
+      <form onSubmit={confWifiHandleSubmit}>
+
+      <p>Wifi SSID: <input type="text" onChange={confWifiHandleChange} name="ssid" value={confWifi.ssid} /></p>
+
+      <p>Wifi PSK: <input type="text" onChange={confWifiHandleChange} name="psk" value={confWifi.psk} /></p>
+
+      <p><input type="submit" value="submit" /></p>
+      </form>
+      {confWifi.status && <p>{confWifi.status}</p>}
+    </div>
+
+    <SVGseparator a={60} b={20} c={70} d={40} width={12} />
+      </section>
+	  
+      <section>
+	  <h2>Real time data</h2>
+	  
+	  <div>
+	  <Dashboard />
+	  </div>
+    <SVGseparator a={60} b={20} c={70} d={40} width={12} />
+	  </section>
+
+      <section>
+      <h2>System control</h2>
+
+      <div>
+      <form onSubmit={sysRestart}>
+	  <input type="submit" value="Restart app" />
+      </form>
+	  </div>
+	  
+      <div>
+      <form onSubmit={sysShutdown}>
+	  <input type="submit" value="Shutdown" />
+      </form>
+	  </div>
+	  
+
+    <SVGseparator a={60} b={20} c={70} d={40} width={12} />
+      </section>
+      
     <section className={`${updateAvail === 'available' ? 'visible' : 'hidden'}`}>
     <h2>Update available</h2>
     <Button
@@ -625,35 +707,6 @@ function App() {
     <button className="fc_btn_option closer" onClick={toggleMenu}>&times;</button>
 
       </div>
-
-      <section>
-      <h2>Configure Wifi</h2>
-
-      <p>Access point: {confWifiApState ? ('On') : ('Off') }</p>
-
-      {
-	confWifiConnected ?
-	  <p>Connected Wifi: {confWifiConnected}</p>
-	  : null
-      }
-
-      <div>
-      <form onSubmit={confWifiHandleSubmit}>
-
-      <p>Wifi SSID: <input type="text" onChange={confWifiHandleChange} name="ssid" value={confWifi.ssid} /></p>
-
-      <p>Wifi PSK: <input type="text" onChange={confWifiHandleChange} name="psk" value={confWifi.psk} /></p>
-
-      <p><input type="submit" value="submit" /></p>
-      </form>
-      {confWifi.status && <p>{confWifi.status}</p>}
-    </div>
-
-      </section>
-	  
-	  <div>
-	  <Dashboard />
-	  </div>
 
     <Footer />
 
