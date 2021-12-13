@@ -175,10 +175,18 @@ def api_updater_install() -> Response:
 
 # settings: send OSC: toggle, use GET / POST
 # update apply / install: apply selected update
-@api.route('/api/configuration', methods=['GET'])
+@api.route('/api/configuration', methods=['GET', 'POST'])
 def api_configuration() -> Response:
-    res = configuration_get_all()
-    return api_response_ok(res)
+    if request.method == 'POST':
+        current_app.logger.info(f'api_configuration request = {request.json}')
+        configuration_set(address=None, value=request.json)
+        return api_response_ok({
+            'message': 'updated'
+        })
+        pass
+    elif request.method == 'GET':
+        res = configuration_get_all()
+        return api_response_ok(res)
 
 @api.route('/api/configuration/wifi/ssid', methods=['GET'])
 def api_configuration_wifi_ssid() -> Response:

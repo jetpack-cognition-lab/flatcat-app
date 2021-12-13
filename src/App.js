@@ -110,7 +110,7 @@ function App() {
 
   const confWifiHandleSubmit = (event) => {
     event.preventDefault();
-    const {ssid, psk} = confWifi;
+      const {ssid, psk} = confWifi;
     setConfWifi((prevConfWifi) => ({
       ...prevConfWifi,
       status: `Submitted ssid: ${ssid}, psk: ${psk}`
@@ -127,6 +127,23 @@ function App() {
     fetch('/api/configuration/wifi', requestOptions).then(res => res.json()).then(data => {
       // setCurrentTime(data.time);
 	console.log('confWifiHandleSubmit response =', data.data.message)
+    });
+  }
+
+  const confFlatcatWriteDict = (event) => {
+      event.preventDefault();
+      
+    // update on api
+    const requestOptions = {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(
+	confFlatcat
+      )
+    };
+    fetch('/api/configuration', requestOptions).then(res => res.json()).then(data => {
+      // setCurrentTime(data.time);
+	console.log('confFlatcatHandleSubmit response =', data.data.message)
     });
   }
 

@@ -386,6 +386,13 @@ def configuration_set(*args, **kwargs):
     with open(config_flatcat_path, 'r') as f:
         config_flatcat = json.load(f)
         logger.info(f'config_flatcat = {json.dumps(config_flatcat, indent=4)}')
+
+    if kwargs['address'] is None:
+        config_flatcat_new = kwargs['value']
+        config_flatcat.update(config_flatcat_new)
+        configuration_write(config_flatcat)
+        return
+        
     # kwargs[key] = wifi/0/ssid
     # kwargs[value] = mywifi
     address_items = kwargs['address'].split('/')

@@ -1,0 +1,105 @@
+{
+    "version": 123
+    "name": "flatcat-Iota",
+    "wifi": {
+	"accesspoint": "on",
+        "networks": [
+            {
+                "id_str": "AP1",
+                "psk": "JetlagIncognitoAlb",
+                "scan_ssid": 1,
+                "ssid": "jcl-one",
+                "status": "connected"
+            },
+            {
+                "ssid": "WLAN-5678",
+                "psk": "pass5678",
+                "scan_ssid": 1,
+                "id_str": "AP2",
+		"status": "disconnected"
+            },
+            {
+                "ssid": "flatcat",
+                "psk": "password",
+                "scan_ssid": 1,
+                "id_str": "AP3",
+		"status": "disconnected"
+            }
+        ]
+    },
+    "gui_conf": {
+	"trainingwheels": true,
+	"darkmode": false
+    },
+    "gui_layout": {
+	"layout_prefs": [
+	    "update": {
+		"type": "section",
+		"title": "Update your flatcat",
+		"items": [
+		    {
+			"type": "button",
+			"value": "Check for update",
+			"handler": "handleCheckForUpdate"
+		    },
+		    {
+			"type": "helptext",
+			"value": "Update check and install button"
+		    }
+		]
+	    },
+	    "name": {
+		"type": "section",
+		"title": "Name your flatcat",
+		"items": [
+		    {
+			"type": "input",
+			"value": "my flatcat name",
+			"handler": "handleMyFlatcatName"
+		    }
+		]
+	    }
+	    "wifi": {
+		"type": "section",
+		"title": "Wifi configuration",
+		"items": [
+		    {
+			"type": "input",
+			"label": "Network name",
+			"value": "My network name",
+			"handler": "handleNetworkName"
+		    },
+		    {
+			"type": "password",
+			"label": "Network secret"
+			"value": "My network secret"
+			"handler": "handleNetworkSecret"
+		    },
+		    {
+			"type": "button",
+			"label": "Connect to network",
+			"handler": "handleNetworkConnect"
+		    }
+		]
+	    },
+	    "uisettings": {
+		"type": "section",
+		"title": "Layout settings",
+		"items": [
+		    {
+			"type": "toggle",
+			"label": "training wheels",
+			"value": null,
+			"handler": "handleUisettingsTrainingWheels"
+		    },
+		    {
+			"type": "toggle",
+			"label": "dark mode",
+			"value": null,
+			"handler": "handleUisettingsDarkMode"
+		    }
+		]
+	    }
+	]
+    }
+}
