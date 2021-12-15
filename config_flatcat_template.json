@@ -32,7 +32,7 @@
 	"darkmode": false
     },
     "gui_layout": {
-	"layout_prefs": [
+	"layout_prefs": {
 	    "update": {
 		"type": "section",
 		"title": "Update your flatcat",
@@ -100,6 +100,6 @@
 		    }
 		]
 	    }
-	]
+	}
     }
 }

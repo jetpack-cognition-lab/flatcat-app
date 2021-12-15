@@ -1,18 +1,48 @@
-# flatcat-app
+# flatcat app
 
-This project consists of two components, a python library to manage
-the flatcat software installation and a react frontent to control your
-flatcat via a graphical user interface (GUI).
+This is the flatcat app. The project consists of two components, a
+Python library to manage the flatcat software installation, and a
+React frontend to control your flatcat via a graphical user interface
+(GUI). The Python library itself consists of a command line frontend
+to handle update functions in `updater/`, and a Flask based API server
+to handle HTTP request based frontends.
+
+## Setting up the Python environment
+
+If you are running the project for the first time, you will need to
+set up your Python virtual environment first using the python-venv
+module.
+
+```python
+cd flatcat-app
+python3 -m venv venv
+. venv/bin/activate
+pip install -r requirements.txt
+```
+Then you need to create the Python configuration file with
+
+```
+cp config.py.dist config.py
+```
+
+and manually adjust config.py to your paths correctly.
+
+Finally, you need to export the path to the flatcat-app directory to
+your PYTHONPATH variable, by running the command
+
+`export PYTHONPATH /path/to/flatcat-app:$PYTHONPATH`
 
 ## updater
 
-## api
+updater directory has four scripts, updater-cl.py, updater-api.py, updater-pre.py, updater-post.py
+
+## API
 
 Using [How To Create a React + Flask Project](https://blog.miguelgrinberg.com/post/how-to-create-a-react--flask-project) as a starting point
 
 All API code is in server/ directory
 
-Start flask backend with `yarn start-api`, will start running on port 5000
+Start flask backend with `npm run start-api`, will start running on port 5000
 
 # Starting the app
 
@@ -28,22 +58,6 @@ Runs the api server. Before starting it, you will have to export the
 path to the flatcat-app directory to your PYTHONPATH variable, eg by
 
 `export PYTHONPATH /path/to/flatcat-app:$PYTHONPATH`
-
-If you are running from a fresh git clone, you will need to set up your Python venv with
-
-```python
-cd flatcat-app
-python3 -m venv venv
-. venv/bin/activate
-pip install -r requirements.txt
-```
-Also you need to create the backend configuration file with
-
-```
-cp config.py.dist config.py
-```
-
-Then manually edit config.py and adjust your paths.
 
 ### `yarn start`
 

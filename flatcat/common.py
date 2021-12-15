@@ -30,6 +30,9 @@ from config import (
     base_work,
     config_wpa_path,
     config_flatcat_path,
+    dir_flatcatapp,
+    dir_flatcatux0,
+    dir_flatcatsetup,
 )
 
 from flatcat.logging import create_logger
@@ -49,7 +52,7 @@ def ns2kw(ns):
 def updater_parser():
     parser = argparse.ArgumentParser()
     subparsers = parser.add_subparsers(
-        help='flatcat-app/updater command help', dest='mode')
+        help=f'{dir_flatcatapp}/updater command help', dest='mode')
     subparser_uuid = subparsers.add_parser('uuid', help='create new uuid help')
     
     subparser_list = subparsers.add_parser('list', help='Get list of update files help')
@@ -98,14 +101,14 @@ def create_timestamp():
     return datetime.now().strftime('%Y%m%d-%H%M%S')
 
 def update_version_tag(working_dir, version_string):
-    version_file_path = f'{working_dir}/flatcat-app/version.txt'
+    version_file_path = f'{working_dir}/{dir_flatcatapp}/version.txt'
     bytes_written = 0
     with open(version_file_path, 'w') as f:
         bytes_written = f.write(version_string)
     return bytes_written
 
 def get_version_tag(working_dir):
-    version_file_path = f'{working_dir}/flatcat-app/version.txt'
+    version_file_path = f'{working_dir}/{dir_flatcatapp}/version.txt'
     logger.info(f'get_version_tag {version_file_path}')
     try:
         with open(version_file_path, 'r') as f:
@@ -305,7 +308,7 @@ def updater_install(*args, **kwargs):
     commands.append({'cmd_line': cmd_line, 'cmd_status': cmd_status, 'cmd_output': cmd_output})
 
     # run pre-install script
-    cmd_line = ['python', f'{base_local}/flatcat-app/updater/updater-pre.py']
+    cmd_line = ['python', f'{base_local}/{dir_flatcatapp}/updater/updater-pre.py']
     cmd_status, cmd_output = run_command(cmd_line, kwargs['run_hot'])
     commands.append({'cmd_line': cmd_line, 'cmd_status': cmd_status, 'cmd_output': cmd_output})
 
@@ -325,7 +328,7 @@ def updater_install(*args, **kwargs):
 
     # run post-install script
     # install crontab
-    cmd_line = ['python', f'{base_local}/flatcat-app/updater/updater-post.py']
+    cmd_line = ['python', f'{base_local}/{dir_flatcatapp}/updater/updater-post.py']
     # '--backup', base_local_old]
     cmd_status, cmd_output = run_command(cmd_line, kwargs['run_hot'])
     commands.append({'cmd_line': cmd_line, 'cmd_status': cmd_status, 'cmd_output': cmd_output})
@@ -370,7 +373,7 @@ def configuration_get_all(*args, **kwargs):
     Get the entire configuration dict from config_flatcat.json
     """
     config_flatcat = {}
-    # logger.info(f'configuration_get_all {os.getcwd()}')
+    logger.info(f'configuration_get_all cwd {os.getcwd()}, config_flatcat_path {config_flatcat_path}')
     with open(config_flatcat_path, 'r') as f:
         config_flatcat = json.load(f)
         # print(f'config_flatcat = {json.dumps(config_flatcat, indent=4)}')

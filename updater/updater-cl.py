@@ -118,7 +118,7 @@ def main_package(args):
     #         f.write(f"{item}\n")
     
     # # read list from file
-    # with open('flatcat-app/updater/package_list_runtime.txt', 'r') as f:
+    # with open('{dir_flatcatapp}/updater/package_list_runtime.txt', 'r') as f:
     #     l = [_.strip() for _ in f.readlines()] 
     #     logger.info(l)
 
@@ -131,9 +131,9 @@ def main_package(args):
     
     # tar command transforming the path with raspberry prefix, taking inputs from a file
     # package data
-    package_data_file_name = f'flatcat-app/updater/data/flatcat-{timestamp}-data.tar.bz2'
-    # package_data_command = f'tar --transform s/^flatcat-/home\/pi\/jetpack\/flatcat-/ -jcf {package_data_file_name} -T flatcat-app/updater/data/package_list_runtime.txt'.split(' ')
-    package_data_command = f'tar --transform s/^flatcat-/jetpack\/flatcat-/ -jcf {package_data_file_name} -T flatcat-app/updater/data/package_list_runtime.txt'.split(' ')
+    package_data_file_name = f'{dir_flatcatapp}/updater/data/flatcat-{timestamp}-data.tar.bz2'
+    # package_data_command = f'tar --transform s/^flatcat-/home\/pi\/jetpack\/flatcat-/ -jcf {package_data_file_name} -T {dir_flatcatapp}/updater/data/package_list_runtime.txt'.split(' ')
+    package_data_command = f'tar --transform s/^flatcat-/jetpack\/flatcat-/ -jcf {package_data_file_name} -T {dir_flatcatapp}/updater/data/package_list_runtime.txt'.split(' ')
     logger.info(f'package_data_command = {package_data_command}')
     cmd_status, cmd_output = run_command(package_data_command, kwargs['run_hot'])
     if not cmd_status:
@@ -141,9 +141,9 @@ def main_package(args):
         return
     
     # package control
-    package_control_file_name = f'flatcat-app/updater/data/flatcat-{timestamp}-control.tar.bz2'
-    # package_control_command = f'tar --transform s/^flatcat-/home\/pi\/jetpack\/flatcat-/ -jcf {package_control_file_name} -T flatcat-app/updater/data/package_list_control.txt'.split(' ')
-    package_control_command = f'tar --transform s/^flatcat-/jetpack\/flatcat-/ -jcf {package_control_file_name} -T flatcat-app/updater/data/package_list_control.txt'.split(' ')
+    package_control_file_name = f'{dir_flatcatapp}/updater/data/flatcat-{timestamp}-control.tar.bz2'
+    # package_control_command = f'tar --transform s/^flatcat-/home\/pi\/jetpack\/flatcat-/ -jcf {package_control_file_name} -T {dir_flatcatapp}/updater/data/package_list_control.txt'.split(' ')
+    package_control_command = f'tar --transform s/^flatcat-/jetpack\/flatcat-/ -jcf {package_control_file_name} -T {dir_flatcatapp}/updater/data/package_list_control.txt'.split(' ')
     logger.info(f'package_control_command = {package_control_command}')
     cmd_status, cmd_output = run_command(package_control_command, kwargs['run_hot'])
     if not cmd_status:
@@ -151,7 +151,7 @@ def main_package(args):
         return
 
     # package total
-    package_file_name = f'flatcat-app/updater/data/flatcat-{timestamp}.ar'
+    package_file_name = f'{dir_flatcatapp}/updater/data/flatcat-{timestamp}.ar'
     package_command = f'ar q {package_file_name} {package_data_file_name} {package_control_file_name}'.split(' ')
     logger.info(f'package_command = {package_command}')
     cmd_status, cmd_output = run_command(package_command, kwargs['run_hot'])
@@ -167,7 +167,7 @@ def main_upload(args):
     """
     kwargs = ns2kw(args)
 
-    update_datadir = 'flatcat-app/updater/data'
+    update_datadir = '{dir_flatcatapp}/updater/data'
     if kwargs['filename'] is None:
         update_filename, update_version = get_current_local(update_datadir)
     else:
@@ -195,7 +195,7 @@ def main_configure_wpa(args):
     kwargs = ns2kw(args)
     configuration_get_wifi(**kwargs)
 
-def main_flatcat_live(args):
+def main_test_flatcat_live(args):
     """flatcat_live a packaged update
 
     - flatcat_live the package file
@@ -203,6 +203,15 @@ def main_flatcat_live(args):
     """
     kwargs = ns2kw(args)
     ret = flatcat_live(**kwargs)
+    return ret
+
+def main_test_rewrite_flatcatdat(args):
+    """main_test_rewrite_flatcatdat
+
+    Test rewrite flatcat.dat.dist to flatcat.dat
+    """
+    kwargs = ns2kw(args)
+    ret = rewrite_flatcatdat(**kwargs)
     return ret
 
 if __name__ == '__main__':
@@ -228,8 +237,10 @@ if __name__ == '__main__':
         _main = main_upload
     elif args.mode == 'configure_wpa':
         _main = main_configure_wpa
-    elif args.mode == 'flatcat_live':
-        _main = main_flatcat_live
+    elif args.mode == 'test_flatcat_live':
+        _main = main_test_flatcat_live
+    elif args.mode == 'test_rewrite_flatcatdat':
+        _main = main_test_rewrite_flatcatdat
     else:
         logger.info('Unknown mode {0}, exiting'.format(args.mode))
         sys.exit(1)
