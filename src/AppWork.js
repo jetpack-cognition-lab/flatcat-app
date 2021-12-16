@@ -17,7 +17,7 @@ import SVGseparator from './components/SVGseparator'
 // import BurgerButton from './components/BurgerButton'
 import Inputer from './components/Inputer'
 import InputerWifi from './components/InputerWifi'
-// import Dashboard from './components/socketDashboard.js';
+import Dashboard from './components/socketDashboard.js';
 
 // import io from "socket.io-client";
 
@@ -553,17 +553,26 @@ function App() {
       </section>
 	  
       <section>
+	  <h2>Real time data</h2>
+	  
+	  <div>
+	  <Dashboard />
+	  </div>
+    <SVGseparator a={60} b={20} c={70} d={40} width={12} />
+	  </section>
+
+      <section>
       <h2>System control</h2>
 
       <div>
       <form onSubmit={sysRestart}>
-	  <p><input type="submit" value="Restart app" /></p>
+	  <input type="submit" value="Restart app" />
       </form>
 	  </div>
 	  
       <div>
       <form onSubmit={sysShutdown}>
-	  <p><input type="submit" value="Shutdown" /></p>
+	  <input type="submit" value="Shutdown" />
       </form>
 	  </div>
 	  
@@ -571,6 +580,73 @@ function App() {
     <SVGseparator a={60} b={20} c={70} d={40} width={12} />
       </section>
       
+    <section className={`${updateAvail === 'available' ? 'visible' : 'hidden'}`}>
+    <h2>Update available</h2>
+    <Button
+      color='green'
+      text='download & install'
+      onClick={handleSubmitInstall}
+      postpone={hideUpdate}
+      abort
+    />
+    <SVGseparator a={60} b={20} c={70} d={40} width={8} />
+    </section>
+
+    <section>
+    <h2>Data Outputs</h2>
+    <DataOutputList dataArr={externDataState} />
+    <SVGseparator a={60} b={20} c={70} d={40} width={8} />
+    </section>
+
+    <section>
+    <h2>Data Output Tacho</h2>
+    <div className='fc_output_group'>
+    <DataOutputList dataArr={tachoState} />
+    <TachoScale
+      dataValue={tachoState[0].value}
+      limitLow={tachoState[0].from}
+      limitHigh={tachoState[0].to}
+      scaleClockFace={tachoState[0].scale}
+    />
+    </div>
+    <p>
+    <button style={{margin: "2px"}} onClick={() => setTachoData(0,-50)}>demo -50</button>
+    <button style={{margin: "2px"}} onClick={() => setTachoData(0,-10)}>demo -10</button>
+    <button style={{margin: "2px"}} onClick={() => setTachoData(0,-1)}>demo -1</button>
+    <button style={{margin: "2px"}} onClick={() => setTachoData(0,1)}>demo +1</button>
+    <button style={{margin: "2px"}} onClick={() => setTachoData(0,10)}>demo +10</button>
+    <button style={{margin: "2px"}} onClick={() => setTachoData(0,50)}>demo +50</button>
+    </p>
+    <SVGseparator a={60} b={20} c={70} d={40} width={12} />
+    </section>
+
+    <section className="fc_onoff">
+    <h2>Option group</h2>
+    {fcuiOnOffs.map((onOffOption, index) => (
+      <OnOff
+      key={onOffOption.id}
+      onOffOption={onOffOption}
+      onClick={toggleOptionOnOffs(index)}
+      />
+    ))}
+    <SVGseparator a={60} b={20} c={70} d={40} width={8} />
+    </section>
+
+    <section className="fc_slider">
+    <ReactSlider
+    className="vertical-slider"
+    thumbClassName="example-thumb"
+    trackClassName="example-track"
+    orientation="vertical"
+    />
+    <div className="clock_wrap">
+    <div className="clock" id="clc_1">
+    </div>
+    </div>
+    <SVGseparator a={20} b={60} c={20} d={20} width={8} />
+    </section>
+
+
     {/* PREFERENCES */}
 
     <div className={`theMenu ${showMenu && "visible"}`}>

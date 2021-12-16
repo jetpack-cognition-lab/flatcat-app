@@ -9,7 +9,7 @@ from flask import (
     Blueprint,
     render_template
 )
-# sys.path.insert(0, '/home/src/QK/jetpack/flatcat-app')
+# sys.path.insert(0, '/path/to/jetpack/flatcat_app')
 # print(sys.path)
 
 from config import (

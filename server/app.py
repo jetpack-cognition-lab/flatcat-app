@@ -4,6 +4,10 @@ from flask_cors import CORS
 from flask import (
     Flask)
 
+from config import (
+    socketio_enabled
+)
+
 from api import api as api_blueprint
 
 from flatcat.ux0 import DataThread

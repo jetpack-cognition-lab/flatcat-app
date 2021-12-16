@@ -35,12 +35,12 @@ def flatcat_config_read_to_dict(conffile):
     confdict = dict(confdict)
 
     for k, v in confdict.items():
-        print(k, v)
+        print(f'flatcat_config_read_to_dict {k}, {v}')
         try:
             confdict[k] = int(v)
             continue
         except ValueError as e:
-            print(e)
+            print(f'flatcat_config_read_to_dict Exception: {e}')
 
         if v.startswith('{') and ',' not in v:
             # scalar, remove vector braces
@@ -49,7 +49,7 @@ def flatcat_config_read_to_dict(conffile):
             continue
 
         # otherwise string
-        
+        confdict[k] = str(v)
     
     # types: int, float, string, vector
     
@@ -61,6 +61,7 @@ def flatcat_config_read_to_dict(conffile):
     return confdict
 
 def flatcat_config_dict_to_file(conffile, conf):
+    print(f"flatcat_config_dict_to_file writing to {conffile}")
     with open(conffile, 'w') as f:
         for k, v in conf.items():
             if type(v) in [int, str]:

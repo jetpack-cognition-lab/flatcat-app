@@ -14,7 +14,7 @@ set up your Python virtual environment first using the python-venv
 module.
 
 ```python
-cd flatcat-app
+cd flatcat_app
 python3 -m venv venv
 . venv/bin/activate
 pip install -r requirements.txt
@@ -27,10 +27,10 @@ cp config.py.dist config.py
 
 and manually adjust config.py to your paths correctly.
 
-Finally, you need to export the path to the flatcat-app directory to
+Finally, you need to export the path to the flatcat app directory to
 your PYTHONPATH variable, by running the command
 
-`export PYTHONPATH /path/to/flatcat-app:$PYTHONPATH`
+`export PYTHONPATH /path/to/flatcat_app:$PYTHONPATH`
 
 ## updater
 
@@ -54,10 +54,7 @@ In the project directory, you can run:
 
 ### `yarn start-api`
 
-Runs the api server. Before starting it, you will have to export the
-path to the flatcat-app directory to your PYTHONPATH variable, eg by
-
-`export PYTHONPATH /path/to/flatcat-app:$PYTHONPATH`
+If you have done the Python setup above and activated the virtual environment in venv, this should start the API server
 
 ### `yarn start`
 

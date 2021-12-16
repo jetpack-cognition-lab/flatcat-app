@@ -1,6 +1,6 @@
 {
-  "short_name": "React App",
-  "name": "Create React App Sample",
+  "short_name": "flatcat app",
+  "name": "flatcat app - configure and update your flatcat",
   "icons": [
     {
       "src": "favicon.ico",

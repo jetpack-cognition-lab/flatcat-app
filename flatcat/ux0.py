@@ -29,11 +29,16 @@ class DataThread(threading.Thread):
         self.bufsize  = 4096
         self.soc = -1
         self.app.logger.info(f'{self.__class__.__name__} socket connect {self.address}:{self.port}')
-        self.sock.connect((self.address, self.port))
-        
+        # connect the socket
+        self.connect()
         self.app.logger.info(f'{self.__class__.__name__} socket local  {self.sock.getsockname()}')
         self.app.logger.info(f'{self.__class__.__name__} socket remote {self.sock.getpeername()}')
-        self.is_connected = True
+
+    def connect(self):
+        errno = self.sock.connect((self.address, self.port))
+        self.app.logger.info(f'{self.__class__.__name__} socket connect {errno}')
+        if errno < 1:
+            self.is_connected = True
 
     def parse_message(self, msg):
         li = msg.split("=", 1)
@@ -87,9 +92,10 @@ class DataThread(threading.Thread):
                     # socketio.emit('responseMessage', {'temperature': self.soc})
                 else:
                     temperature = round(random.random()*10, 3)
-
-                # self.app.logger.info(f'{self.__class__.__name__} dataGenerator temperature {temperature}')
-                self.socketio.emit('responseMessage', {'temperature': temperature})
+                
+                if self.socketio is not None:
+                    # self.app.logger.info(f'{self.__class__.__name__} dataGenerator temperature {temperature}')
+                    self.socketio.emit('responseMessage', {'temperature': temperature})
 
                 time.sleep(self.delay)
 

@@ -1,4 +1,4 @@
-"""flatcat-app/updater
+"""flatcat_app/updater
 
 updaterlib used by updater-cl (command line) and updater_api (flask API)
 """
