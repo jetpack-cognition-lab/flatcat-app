@@ -1,3 +1,5 @@
+"""flatcat_app Flask app top-level
+"""
 import threading
 from flask_socketio import SocketIO, send, emit
 from flask_cors import CORS

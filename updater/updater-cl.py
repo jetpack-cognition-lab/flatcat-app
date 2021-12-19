@@ -38,7 +38,10 @@ from config import (
     base_hostname,
     base_home,
     base_local,
-    base_work
+    base_work,
+    dir_flatcatapp,
+    dir_flatcatsetup,
+    dir_flatcatux0,
 )
 
 from flatcat.common import (
@@ -97,18 +100,18 @@ def main_package(args):
 
     # package_list_runtime = [
     #     # flatcat main controller
-    #     'flatcat-ux0/ux0_serial',
-    #     'flatcat-ux0/flatcat.dat.dist',
-    #     # flatcat-setup
-    #     'flatcat-setup/readme.txt',
-    #     'flatcat-setup/boot',
-    #     'flatcat-setup/boot/start-tmux.sh',
-    #     'flatcat-setup/boot/start-ap-managed-wifi.sh',
-    #     'flatcat-setup/network',
-    #     'flatcat-setup/network/hostapd.conf',
-    #     'flatcat-setup/network/interfaces',
-    #     'flatcat-setup/network/wpa_supplicant.conf',
-    #     'flatcat-setup/crontabfile',
+    #     'flatcat_ux0/ux0_serial',
+    #     'flatcat_ux0/flatcat.dat.dist',
+    #     # flatcat_setup
+    #     'flatcat_setup/readme.txt',
+    #     'flatcat_setup/boot',
+    #     'flatcat_setup/boot/start-tmux.sh',
+    #     'flatcat_setup/boot/start-ap-managed-wifi.sh',
+    #     'flatcat_setup/network',
+    #     'flatcat_setup/network/hostapd.conf',
+    #     'flatcat_setup/network/interfaces',
+    #     'flatcat_setup/network/wpa_supplicant.conf',
+    #     'flatcat_setup/crontabfile',
     # ]
     # logger.info(f'package_list_runtime =\n{pformat(package_list_runtime)}')
     
@@ -132,8 +135,8 @@ def main_package(args):
     # tar command transforming the path with raspberry prefix, taking inputs from a file
     # package data
     package_data_file_name = f'{dir_flatcatapp}/updater/data/flatcat-{timestamp}-data.tar.bz2'
-    # package_data_command = f'tar --transform s/^flatcat-/home\/pi\/jetpack\/flatcat-/ -jcf {package_data_file_name} -T {dir_flatcatapp}/updater/data/package_list_runtime.txt'.split(' ')
-    package_data_command = f'tar --transform s/^flatcat-/jetpack\/flatcat-/ -jcf {package_data_file_name} -T {dir_flatcatapp}/updater/data/package_list_runtime.txt'.split(' ')
+    # package_data_command = f'tar --transform s/^flatcat_/home\/pi\/jetpack\/flatcat_/ -jcf {package_data_file_name} -T {dir_flatcatapp}/updater/data/package_list_runtime.txt'.split(' ')
+    package_data_command = f'tar --transform s/^flatcat_/jetpack\/flatcat_/ -jcf {package_data_file_name} -T {dir_flatcatapp}/updater/data/package_list_runtime.txt'.split(' ')
     logger.info(f'package_data_command = {package_data_command}')
     cmd_status, cmd_output = run_command(package_data_command, kwargs['run_hot'])
     if not cmd_status:
@@ -142,8 +145,8 @@ def main_package(args):
     
     # package control
     package_control_file_name = f'{dir_flatcatapp}/updater/data/flatcat-{timestamp}-control.tar.bz2'
-    # package_control_command = f'tar --transform s/^flatcat-/home\/pi\/jetpack\/flatcat-/ -jcf {package_control_file_name} -T {dir_flatcatapp}/updater/data/package_list_control.txt'.split(' ')
-    package_control_command = f'tar --transform s/^flatcat-/jetpack\/flatcat-/ -jcf {package_control_file_name} -T {dir_flatcatapp}/updater/data/package_list_control.txt'.split(' ')
+    # package_control_command = f'tar --transform s/^flatcat_/home\/pi\/jetpack\/flatcat_/ -jcf {package_control_file_name} -T {dir_flatcatapp}/updater/data/package_list_control.txt'.split(' ')
+    package_control_command = f'tar --transform s/^flatcat_/jetpack\/flatcat_/ -jcf {package_control_file_name} -T {dir_flatcatapp}/updater/data/package_list_control.txt'.split(' ')
     logger.info(f'package_control_command = {package_control_command}')
     cmd_status, cmd_output = run_command(package_control_command, kwargs['run_hot'])
     if not cmd_status:
@@ -167,7 +170,7 @@ def main_upload(args):
     """
     kwargs = ns2kw(args)
 
-    update_datadir = '{dir_flatcatapp}/updater/data'
+    update_datadir = f'{dir_flatcatapp}/updater/data'
     if kwargs['filename'] is None:
         update_filename, update_version = get_current_local(update_datadir)
     else:

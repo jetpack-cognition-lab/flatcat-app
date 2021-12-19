@@ -61,6 +61,7 @@ def updater_parser():
 
     subparser_download = subparsers.add_parser('download', help='download update file help')
     subparser_download.add_argument("-i", "--install-version", dest='install_version', help="Which version to install [current]", default = 'current')
+    subparser_download.add_argument("-r", "--run-hot", dest='run_hot', action='store_true', default=False, help="Really run commands [False]")
     
     subparser_install = subparsers.add_parser('install', help='install update file help')
     subparser_install.add_argument("-i", "--install-version", dest='install_version', help="Which version to install [current]", default = 'current')
@@ -158,6 +159,7 @@ def get_current_remote(call_url=None):
     return current_file, current_version
 
 def get_current_local(update_datadir):
+    logger.info(f'get_current_local: update_datadir {update_datadir}')
     folder_path = Path(update_datadir)
     list_of_paths = folder_path.glob('*')
     latest_path = max(list_of_paths, key=lambda p: p.stat().st_ctime)
@@ -342,7 +344,7 @@ def updater_install(*args, **kwargs):
     # application restart
     # /home/pi/jetpack/bootscripts/starttmux.sh
     # /home/pi/jetpack/setup/boot/start-tmux.sh
-    cmd_line = [f'{base_local}/flatcat-setup/boot/start-tmux.sh']
+    cmd_line = [f'{base_local}/{dir_flatcatsetup}/boot/start-tmux.sh']
     cmd_status, cmd_output = run_command(cmd_line, kwargs['run_hot'])
     commands.append({'cmd_line': cmd_line, 'cmd_status': cmd_status, 'cmd_output': cmd_output})
     
